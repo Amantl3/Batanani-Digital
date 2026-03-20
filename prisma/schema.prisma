@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Complaint {
+  id          String   @id @default(uuid())
+  refNumber   String   @unique
+  status      String   @default("open")
+  category    String
+  provider    String
+  description String
+  userId      String
+  createdAt   DateTime @default(now())
+}
+
+model Licence {
+  id          String   @id @default(uuid())
+  type        String
+  companyName String
+  status      String   @default("pending")
+  userId      String
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

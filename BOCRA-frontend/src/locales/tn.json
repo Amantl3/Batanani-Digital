@@ -1,0 +1,51 @@
+{
+  "nav": {
+    "home": "Gae",
+    "licensing": "Laesense",
+    "complaints": "Ditŝhinyego",
+    "dashboard": "Papadi ya Tlhaeletsano",
+    "publications": "Dikgatiso",
+    "portal": "Lekala la Me",
+    "login": "Tsena",
+    "register": "Kwadisa",
+    "logout": "Tswa"
+  },
+  "home": {
+    "badge": "Semolodi wa diphasafaletso tsa Botswana",
+    "hero_title_1": "Go laola ikonomi ya dijithale",
+    "hero_title_2": "go ntsha Motswana mongwe le mongwe",
+    "hero_sub": "Lefelo la gago la le lesimasetlha la laesense, tshedimosetso ya molao, taolo ya ditŝhinyego le dikgotlhagano tsa setšhaba.",
+    "search_placeholder": "Batla laesense, melao, dikgatiso…",
+    "search_btn": "Batla",
+    "quick_access": "Phitlhelelo e e bonako",
+    "latest_news": "Dikgang le dikgotlhagano tse di morang",
+    "view_all": "Bona tsotlhe →",
+    "system_status": "Maemo a tsamaiso",
+    "how_to_complain": "Tsela ya go tshinyega",
+    "file_complaint": "Tshinyega →"
+  },
+  "common": {
+    "loading": "E a laela…",
+    "error": "Go na le sesupo.",
+    "retry": "Leka gape",
+    "not_found": "Tsebe ga e a bonwa",
+    "go_home": "Boela gae",
+    "view": "Lebelela",
+    "download": "Laola",
+    "close": "Tswala",
+    "cancel": "Khansela",
+    "save": "Boloka",
+    "previous": "E e fetileng",
+    "next": "E e latelang",
+    "operational": "E a bereka",
+    "maintenance": "Tlhokomelo",
+    "degraded": "E fokotsegile",
+    "down": "E timilwe",
+    "active": "E bereka",
+    "pending": "E emetse",
+    "expired": "E fedile",
+    "resolved": "E raraantswe",
+    "in_review": "E sekasekwa",
+    "submitted": "E rometswe"
+  }
+}

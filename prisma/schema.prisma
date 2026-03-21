@@ -35,3 +35,12 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  from      String
+  message   String
+  response  String
+  language  String   @default("en")
+  createdAt DateTime @default(now())
+}

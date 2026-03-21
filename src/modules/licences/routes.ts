@@ -18,10 +18,11 @@ import {
   mostCommonLicenceTypes,
   suspendedLicences,
 } from "./controller";
+import { protect } from "../../middleware/auth";
 
 const router = Router();
 
-// Stats & summaries
+// Stats & summaries — public
 router.get("/stats", licenceStats);
 router.get("/by-type", licencesByType);
 router.get("/recent", recentLicences);
@@ -32,17 +33,17 @@ router.get("/renewals", licenceRenewals);
 router.get("/common-types", mostCommonLicenceTypes);
 router.get("/suspended", suspendedLicences);
 
-// User specific
-router.get("/user/:userId", licencesByUser);
+// User specific — protected
+router.get("/user/:userId", protect, licencesByUser);
 
-// CRUD
+// CRUD — protect write operations
 router.get("/", listLicences);
 router.get("/:id", getLicence);
-router.post("/", applyForLicence);
-router.patch("/:id/status", updateStatus);
-router.delete("/:id", removeLicence);
+router.post("/", protect, applyForLicence);
+router.patch("/:id/status", protect, updateStatus);
+router.delete("/:id", protect, removeLicence);
 
-// Single licence extras
+// Single licence extras — public
 router.get("/:id/verify", verifyLicencePublic);
 router.get("/:id/history", licenceHistory);
 

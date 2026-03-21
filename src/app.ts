@@ -1,15 +1,16 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import dotenv from "dotenv";
 import { supabase } from "./config/supabase";
 import dashboardRoutes from "./modules/dashboard/routes";
 import licenceRoutes from "./modules/licences/routes";
 import complaintRoutes from "./modules/complaints/routes";
 import authRoutes from "./modules/auth/routes";
-
-dotenv.config();
+import chatRoutes from "./modules/chat/routes";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,8 +19,6 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/licences", licenceRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "BOCRA API is running" });
@@ -31,13 +30,14 @@ app.get("/api/test-supabase", async (req, res) => {
   res.json({ success: true, message: "Supabase connected", data });
 });
 
-app.use("/api/complaints", complaintRoutes);
-
 app.use("/api/auth", authRoutes);
+app.use("/api/complaints", complaintRoutes);
+app.use("/api/licences", licenceRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
 
 export default app;

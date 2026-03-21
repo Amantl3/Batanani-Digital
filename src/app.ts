@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import { supabase } from "./config/supabase";
 import dashboardRoutes from "./modules/dashboard/routes";
 import licenceRoutes from "./modules/licences/routes";
+import complaintRoutes from "./modules/complaints/routes";
+import authRoutes from "./modules/auth/routes";
 
 dotenv.config();
 
@@ -23,14 +25,19 @@ app.get("/", (req, res) => {
   res.json({ message: "BOCRA API is running" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 app.get("/api/test-supabase", async (req, res) => {
   const { data, error } = await supabase.from("Complaint").select("*").limit(1);
   if (error) return res.status(500).json({ success: false, error: error.message });
   res.json({ success: true, message: "Supabase connected", data });
 });
+
+app.use("/api/complaints", complaintRoutes);
+
+app.use("/api/auth", authRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
 
 export default app;

@@ -1,10 +1,11 @@
 export const APP_NAME = 'BOCRA Digital'
 
+// Dashboard is intentionally excluded from public nav
+// Admin accesses it via /admin/dashboard
 export const NAV_LINKS = [
   { label: 'Home',         path: '/',            requiresAuth: false },
   { label: 'Licensing',    path: '/licensing',   requiresAuth: false },
   { label: 'Complaints',   path: '/complaints',  requiresAuth: false },
-  { label: 'Dashboard',    path: '/dashboard',   requiresAuth: false },
   { label: 'Publications', path: '/publications',requiresAuth: false },
   { label: 'My Portal',    path: '/portal',      requiresAuth: true  },
 ] as const
@@ -42,7 +43,7 @@ export const SERVICE_PROVIDERS = [
 ] as const
 
 export const FILE_UPLOAD = {
-  maxSizeBytes:       5 * 1024 * 1024,
-  acceptedTypes:      { 'application/pdf': ['.pdf'], 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'] },
-  maxFiles:           5,
+  maxSizeBytes:  5 * 1024 * 1024,
+  acceptedTypes: { 'application/pdf': ['.pdf'], 'image/jpeg': ['.jpg', '.jpeg'], 'image/png': ['.png'] },
+  maxFiles:      5,
 } as const

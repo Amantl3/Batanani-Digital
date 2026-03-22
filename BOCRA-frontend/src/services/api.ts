@@ -1,15 +1,26 @@
-import axios, {
-  type AxiosError,
-  type InternalAxiosRequestConfig,
-} from 'axios'
+/**
+ * ╔══════════════════════════════════════════════════════════════════════╗
+ * ║                   BACKEND CONNECTION GUIDE                          ║
+ * ╠══════════════════════════════════════════════════════════════════════╣
+ * ║ Your Railway backend URL goes in .env:                               ║
+ * ║   VITE_API_BASE_URL=https://your-app.up.railway.app/api/v1          ║
+ * ║                                                                      ║
+ * ║ Every service file (auth.ts, licences.ts, complaints.ts,            ║
+ * ║ analytics.ts) uses this axios instance which automatically:          ║
+ * ║   1. Prepends VITE_API_BASE_URL to every request                    ║
+ * ║   2. Attaches JWT access token from sessionStorage                  ║
+ * ║   3. Silently refreshes token on 401 (using HttpOnly refresh cookie) ║
+ * ║   4. Redirects to /login if refresh also fails                      ║
+ * ╚══════════════════════════════════════════════════════════════════════╝
+ */
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import type { ApiError } from '@/types'
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api/v1'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api/v1'
 
 export const api = axios.create({
   baseURL:         BASE_URL,
-  withCredentials: true,   // send HttpOnly refresh cookie automatically
+  withCredentials: true,   // sends HttpOnly refresh cookie automatically
   timeout:         15_000,
   headers: {
     'Content-Type': 'application/json',
@@ -17,7 +28,7 @@ export const api = axios.create({
   },
 })
 
-// ── Request: attach access token ──────────────────────────────────────────────
+// ── Attach JWT to every request ───────────────────────────────────────────────
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = sessionStorage.getItem('access_token')
   if (token && config.headers) {
@@ -26,33 +37,27 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config
 })
 
-// ── Response: silent token refresh on 401 ────────────────────────────────────
+// ── Auto-refresh token on 401 ─────────────────────────────────────────────────
 let isRefreshing = false
 let queue: { resolve: (t: string) => void; reject: (e: unknown) => void }[] = []
 
 function drain(error: unknown, token: string | null) {
-  queue.forEach((p) => (token ? p.resolve(token) : p.reject(error)))
+  queue.forEach(p => token ? p.resolve(token) : p.reject(error))
   queue = []
 }
 
 api.interceptors.response.use(
-  (res) => res,
+  res => res,
   async (err: AxiosError) => {
     const orig = err.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
     if (err.response?.status === 401 && !orig._retry) {
       if (isRefreshing) {
-        return new Promise<string>((resolve, reject) =>
-          queue.push({ resolve, reject })
-        ).then((token) => {
-          orig.headers['Authorization'] = `Bearer ${token}`
-          return api(orig)
-        })
+        return new Promise<string>((resolve, reject) => queue.push({ resolve, reject }))
+          .then(token => { orig.headers['Authorization'] = `Bearer ${token}`; return api(orig) })
       }
-
-      orig._retry   = true
-      isRefreshing  = true
-
+      orig._retry  = true
+      isRefreshing = true
       try {
         const { data } = await api.post<{ accessToken: string }>('/auth/refresh')
         sessionStorage.setItem('access_token', data.accessToken)
@@ -69,7 +74,7 @@ api.interceptors.response.use(
       }
     }
 
-    // Normalise to RFC 9457 Problem Details
+    // Normalise to RFC 9457 Problem Details format
     const apiError: ApiError = {
       type:     'about:blank',
       title:    'An error occurred',

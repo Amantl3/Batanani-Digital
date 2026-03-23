@@ -21,15 +21,34 @@ import {
 
 export const listLicences = async (req: Request, res: Response) => {
   try {
-    const { search, type, status, page, limit } = req.query as Record<string, string>;
+    const { q, category, status, page, limit } = req.query as Record<string, string>;
     const data = await getAllLicences({
-      search,
-      type,
+      search: q,
+      type: category,
       status,
       page: page ? Number(page) : 1,
-      limit: limit ? Number(limit) : 10,
+      limit: limit ? Number(limit) : 15,
     });
-    res.json({ success: true, data });
+
+    const mapped = data.results.map((lic: any) => ({
+      id: lic.id,
+      licenceNumber: lic.id,
+      holderName: lic.companyName,
+      category: lic.type,
+      status: lic.status,
+      issuedAt: lic.createdAt,
+      expiresAt: null,
+      conditions: {},
+      documentUrl: null,
+    }));
+
+    res.json({
+      data: mapped,
+      total: data.total,
+      page: data.page,
+      limit: data.limit,
+      totalPages: data.totalPages,
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

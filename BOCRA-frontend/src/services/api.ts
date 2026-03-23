@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║                   BACKEND CONNECTION GUIDE                          ║
@@ -20,7 +21,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api
 
 export const api = axios.create({
   baseURL:         BASE_URL,
-  withCredentials: true,   // sends HttpOnly refresh cookie automatically
+  withCredentials: false, // sends HttpOnly refresh cookie automatically
   timeout:         15_000,
   headers: {
     'Content-Type': 'application/json',

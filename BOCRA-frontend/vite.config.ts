@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
@@ -20,16 +20,16 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
-    open: true,
-    proxy: {
-      '/api': {
-        target:       'http://localhost:4000',
-        changeOrigin: true,
-        secure:       false,
-      },
+  port: 3000,
+  open: true,
+  proxy: {
+    '/api': {
+      target: 'https://batanani-digital-production.up.railway.app',
+      changeOrigin: true,
+      secure: true,
     },
   },
+},
   build: {
     outDir:    'dist',
     sourcemap: true,

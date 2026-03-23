@@ -19,7 +19,7 @@ const SERVICES = [
   { icon: RefreshCw,   key: 'renew',         to: '/portal/renew',       bg: 'bg-emerald-50',iconColor: 'text-emerald-600'},
   { icon: CreditCard,  key: 'pay',           to: '/portal/pay',         bg: 'bg-amber-50',  iconColor: 'text-amber-600'  },
   { icon: BarChart2,   key: 'compliance',    to: '/portal/compliance',  bg: 'bg-purple-50', iconColor: 'text-purple-600' },
-  { icon: Globe,       key: 'domain',        to: '/portal/domain',      bg: 'bg-cyan-50',   iconColor: 'text-cyan-600'   },
+  { icon: Globe,       key: 'domain',        to: '/portal/DomainRegistration',      bg: 'bg-cyan-50',   iconColor: 'text-cyan-600'   },
   { icon: CheckSquare, key: 'type_approval', to: '/portal/type-approval',bg: 'bg-red-50',   iconColor: 'text-red-600'    },
 ]
 

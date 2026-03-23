@@ -24,7 +24,7 @@ export function useAuth() {
     if (meQuery.data) {
       store.setUser(meQuery.data)
     }
-  }, [meQuery.data, store])
+  }, [meQuery.data])
 
   const loginMutation = useMutation({
     mutationFn: (creds: LoginCredentials) => authService.login(creds),

@@ -3,8 +3,8 @@ import { registerUser, loginUser } from "./service";
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    const data = await registerUser(email, password);
+    const { email, password, fullName, omangNumber, preferredLanguage } = req.body;
+    const data = await registerUser(email, password, fullName, omangNumber, preferredLanguage);
     res.status(201).json({
       user: data.user,
     });

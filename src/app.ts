@@ -17,7 +17,12 @@ const PORT = process.env.PORT || 3001;
 
 app.use(helmet());
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173"],
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:3001",
+    "https://batanani-digital-production.up.railway.app"
+  ],
   credentials: true,
 }));
 app.use(express.json());

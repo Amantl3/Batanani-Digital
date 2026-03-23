@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 
 import * as authService from '@/services/auth'
 import { useAuthStore } from '@/store/authStore'
@@ -11,15 +12,19 @@ export function useAuth() {
   const qc = useQueryClient()
   const navigate = useNavigate()
 
-  // Silently restore session if an access token already exists in sessionStorage
-  useQuery({
+  const meQuery = useQuery({
     queryKey: ['auth', 'me'],
     queryFn:  authService.getMe,
     enabled:  Boolean(sessionStorage.getItem('access_token')) && !store.user,
     retry:    false,
     staleTime: Infinity,
-    select: (data) => { store.setUser(data); return data },
   })
+
+  useEffect(() => {
+    if (meQuery.data) {
+      store.setUser(meQuery.data)
+    }
+  }, [meQuery.data, store])
 
   const loginMutation = useMutation({
     mutationFn: (creds: LoginCredentials) => authService.login(creds),

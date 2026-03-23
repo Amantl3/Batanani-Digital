@@ -21,6 +21,14 @@ const LoginPage              = lazy(() => import('@pages/auth/LoginPage'))
 const RegisterPage           = lazy(() => import('@pages/auth/RegisterPage'))
 const ForgotPasswordPage     = lazy(() => import('@pages/auth/ForgotPasswordPage'))
 const NotFoundPage           = lazy(() => import('@pages/NotFoundPage'))
+const DomainRegistrationPage = lazy(() => import('@pages/portal/DomainRegistrationPage'))
+const CompliancePage         = lazy(() => import('@pages/portal/CompliancePage'))
+const FeesPage                = lazy(() => import('@pages/portal/FeesPage'))
+const RenewLicensePage        = lazy(() => import('@pages/portal/RenewLicensePage'))
+const ApprovalApplicationPage = lazy(() => import('@pages/portal/ApprovalApplicationPage'))
+
+
+
 
 export default function App() {
   return (
@@ -43,6 +51,15 @@ export default function App() {
             <Route path="/complaints/track/:ref" element={<ComplaintTrackPage />} />
             <Route path="/complaints/track"      element={<ComplaintTrackPage />} />
             <Route path="/publications"          element={<PublicationsPage />} />
+            <Route path="/portal/apply"        element={<LicenceApplicationPage />} />
+            <Route path="/portal/DomainRegistration" element={<DomainRegistrationPage/>} />
+            <Route path="/admin/dashboard"     element={<DashboardPage />} />
+            <Route path="/portal"              element={<PortalPage />} />
+            <Route path="/portal/compliance" element={<CompliancePage/>} />
+            <Route path="/portal/pay" element={<FeesPage/>} />
+            <Route path="/portal/renew" element={<RenewLicensePage/>} />
+            <Route path="/portal/type-approval" element={<ApprovalApplicationPage/>} />
+
 
             {/* ── Auth-protected ────────────────────────── */}
             <Route element={<ProtectedRoute />}>

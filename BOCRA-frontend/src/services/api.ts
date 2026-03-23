@@ -16,7 +16,7 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import type { ApiError } from '@/types'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api/v1'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://batanani-digital-production.up.railway.app/api'
 
 export const api = axios.create({
   baseURL:         BASE_URL,

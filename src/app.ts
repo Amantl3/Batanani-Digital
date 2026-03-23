@@ -24,6 +24,7 @@ app.use((req, res, next) => {
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
+    "http://localhost:3003",
     "http://localhost:5173",
     "https://batanani-digital-production.up.railway.app"
   ];
@@ -45,6 +46,7 @@ app.use(cors({
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
+    "http://localhost:3003",
     "http://localhost:5173",
     "https://batanani-digital-production.up.railway.app"
   ],

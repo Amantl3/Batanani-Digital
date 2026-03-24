@@ -12,11 +12,11 @@ import {
   getExpiringSoonLicences,
   getLicencesIssuedThisMonth,
   verifyLicence,
-  getLicenceRenewals,
-  getLicenceHistory,
-  getLicencesByUser,
-  getMostCommonLicenceTypes,
-  getSuspendedLicences,
+  getLicenceRenewals,       // ← new
+  getLicenceHistory,        // ← new
+  getLicencesByUser,        // ← new
+  getMostCommonLicenceTypes,// ← new
+  getSuspendedLicences,     // ← new
 } from "./service";
 
 export const listLicences = async (req: Request, res: Response) => {
@@ -30,7 +30,7 @@ export const listLicences = async (req: Request, res: Response) => {
       limit: limit ? Number(limit) : 15,
     });
 
-    const mapped = (data.results ?? []).map((lic: any) => ({
+    const mapped = data.results.map((lic: any) => ({
       id: lic.id,
       licenceNumber: lic.id,
       holderName: lic.companyName,
@@ -65,21 +65,15 @@ export const getLicence = async (req: Request, res: Response) => {
 
 export const applyForLicence = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
-    const { category, companyName, type } = req.body;
-    const licenceType = category || type;
-    if (!licenceType || !companyName || !userId) {
+    const { type, companyName, userId } = req.body;
+    if (!type || !companyName || !userId) {
       return res.status(400).json({
         success: false,
-        error: "category, companyName are required",
+        error: "type, companyName and userId are required",
       });
     }
-    const data = await createLicence({ type: licenceType, companyName, userId });
-    res.status(201).json({
-      success: true,
-      data,
-      reference: data.id,
-    });
+    const data = await createLicence({ type, companyName, userId });
+    res.status(201).json({ success: true, data });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -191,11 +185,13 @@ export const licenceHistory = async (req: Request, res: Response) => {
 
 export const licencesByUser = async (req: Request, res: Response) => {
   try {
-    const userId = (req.params.userId ?? (req as any).user?.id) as string;
+    const { userId } = req.params;
     if (!userId) {
-      return res.status(400).json({ success: false, error: "userId is required" });
+      return res
+        .status(400)
+        .json({ success: false, error: "userId is required" });
     }
-    const data = await getLicencesByUser(userId);
+    const data = await getLicencesByUser(userId as string);
     res.json({ success: true, data });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

@@ -1,4 +1,7 @@
-import { Request, Response } from "express";
+/**
+ * src/modules/licences/controller.ts
+ */
+import { Request, Response } from 'express'
 import {
   getAllLicences,
   getLicenceById,
@@ -12,206 +15,241 @@ import {
   getExpiringSoonLicences,
   getLicencesIssuedThisMonth,
   verifyLicence,
-  getLicenceRenewals,       // ← new
-  getLicenceHistory,        // ← new
-  getLicencesByUser,        // ← new
-  getMostCommonLicenceTypes,// ← new
-  getSuspendedLicences,     // ← new
-} from "./service";
+  getLicenceRenewals,
+  getLicenceHistory,
+  getLicencesByUser,
+  getMostCommonLicenceTypes,
+  getSuspendedLicences,
+} from './service'
 
+// ── helper: normalise a raw Supabase row to the shape the frontend expects ────
+function mapLicence(lic: any) {
+  return {
+    id:            lic.id,
+    licenceNumber: lic.id,
+    holderName:    lic.companyName   ?? lic.company_name   ?? 'Unknown',
+    category:      lic.type          ?? 'Unknown',
+    status:        lic.status        ?? 'unknown',
+    issuedAt:      lic.createdAt     ?? lic.created_at     ?? null,
+    expiresAt:     lic.expiresAt     ?? lic.expires_at     ?? null,
+    conditions:    lic.conditions    ?? {},
+    documentUrl:   lic.documentUrl   ?? lic.document_url   ?? null,
+  }
+}
+
+// ── GET /api/licences ─────────────────────────────────────────────────────────
 export const listLicences = async (req: Request, res: Response) => {
   try {
-    const { q, category, status, page, limit } = req.query as Record<string, string>;
+    const { q, category, status, page, limit } = req.query as Record<string, string>
     const data = await getAllLicences({
       search: q,
-      type: category,
+      type:   category,
       status,
-      page: page ? Number(page) : 1,
-      limit: limit ? Number(limit) : 15,
-    });
-
-    const mapped = data.results.map((lic: any) => ({
-      id: lic.id,
-      licenceNumber: lic.id,
-      holderName: lic.companyName,
-      category: lic.type,
-      status: lic.status,
-      issuedAt: lic.createdAt,
-      expiresAt: null,
-      conditions: {},
-      documentUrl: null,
-    }));
+      page:   page  ? Number(page)  : 1,
+      limit:  limit ? Number(limit) : 15,
+    })
 
     res.json({
-      data: mapped,
-      total: data.total,
-      page: data.page,
-      limit: data.limit,
+      data:       data.results.map(mapLicence),
+      total:      data.total,
+      page:       data.page,
+      limit:      data.limit,
       totalPages: data.totalPages,
-    });
+    })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[listLicences]', error.message, error.stack)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
+// ── GET /api/licences/:id ─────────────────────────────────────────────────────
 export const getLicence = async (req: Request, res: Response) => {
   try {
-    const data = await getLicenceById(req.params.id as string);
-    res.json({ success: true, data });
+    const data = await getLicenceById(req.params.id)
+    res.json({ success: true, data: mapLicence(data) })
   } catch (error: any) {
-    res.status(404).json({ success: false, error: error.message });
+    console.error('[getLicence]', error.message)
+    res.status(404).json({ success: false, error: error.message })
   }
-};
+}
 
+// ── POST /api/licences ────────────────────────────────────────────────────────
 export const applyForLicence = async (req: Request, res: Response) => {
   try {
-    const { type, companyName, userId } = req.body;
+    const { type, companyName, userId } = req.body
     if (!type || !companyName || !userId) {
       return res.status(400).json({
         success: false,
-        error: "type, companyName and userId are required",
-      });
+        error: 'type, companyName and userId are required',
+      })
     }
-    const data = await createLicence({ type, companyName, userId });
-    res.status(201).json({ success: true, data });
+    const data = await createLicence({ type, companyName, userId })
+    res.status(201).json({ success: true, data: mapLicence(data) })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[applyForLicence]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
+// ── PATCH /api/licences/:id/status ────────────────────────────────────────────
 export const updateStatus = async (req: Request, res: Response) => {
   try {
-    const { status } = req.body;
+    const { status } = req.body
     if (!status) {
-      return res.status(400).json({ success: false, error: "status is required" });
+      return res.status(400).json({ success: false, error: 'status is required' })
     }
-    const data = await updateLicenceStatus(req.params.id as string, status);
-    res.json({ success: true, data });
+    const data = await updateLicenceStatus(req.params.id, status)
+    res.json({ success: true, data: mapLicence(data) })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[updateStatus]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
+// ── DELETE /api/licences/:id ──────────────────────────────────────────────────
 export const removeLicence = async (req: Request, res: Response) => {
   try {
-    const data = await deleteLicence(req.params.id as string);
-    res.json({ success: true, data });
+    const data = await deleteLicence(req.params.id)
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[removeLicence]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
-export const licenceStats = async (req: Request, res: Response) => {
+// ── GET /api/licences/stats ───────────────────────────────────────────────────
+export const licenceStats = async (_req: Request, res: Response) => {
   try {
-    const data = await getLicenceStats();
-    res.json({ success: true, data });
+    const data = await getLicenceStats()
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[licenceStats]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
-export const licencesByType = async (req: Request, res: Response) => {
+// ── GET /api/licences/by-type ─────────────────────────────────────────────────
+export const licencesByType = async (_req: Request, res: Response) => {
   try {
-    const data = await getLicencesByType();
-    res.json({ success: true, data });
+    const data = await getLicencesByType()
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[licencesByType]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
+// ── GET /api/licences/recent ──────────────────────────────────────────────────
 export const recentLicences = async (req: Request, res: Response) => {
   try {
-    const limit = req.query.limit ? Number(req.query.limit) : 5;
-    const data = await getRecentLicences(limit);
-    res.json({ success: true, data });
+    const limit = req.query.limit ? Number(req.query.limit) : 5
+    const data  = await getRecentLicences(limit)
+    res.json({ success: true, data: data.map(mapLicence) })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[recentLicences]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
-export const pendingLicences = async (req: Request, res: Response) => {
+// ── GET /api/licences/pending ─────────────────────────────────────────────────
+export const pendingLicences = async (_req: Request, res: Response) => {
   try {
-    const data = await getPendingLicences();
-    res.json({ success: true, data });
+    const data = await getPendingLicences()
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[pendingLicences]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
-export const expiringSoonLicences = async (req: Request, res: Response) => {
+// ── GET /api/licences/expiring-soon ──────────────────────────────────────────
+export const expiringSoonLicences = async (_req: Request, res: Response) => {
   try {
-    const data = await getExpiringSoonLicences();
-    res.json({ success: true, data });
+    const data = await getExpiringSoonLicences()
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[expiringSoonLicences]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
-export const licencesThisMonth = async (req: Request, res: Response) => {
+// ── GET /api/licences/this-month ──────────────────────────────────────────────
+export const licencesThisMonth = async (_req: Request, res: Response) => {
   try {
-    const data = await getLicencesIssuedThisMonth();
-    res.json({ success: true, data });
+    const data = await getLicencesIssuedThisMonth()
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[licencesThisMonth]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
+// ── GET /api/licences/:id/verify ──────────────────────────────────────────────
 export const verifyLicencePublic = async (req: Request, res: Response) => {
   try {
-    const data = await verifyLicence(req.params.id as string);
-    res.json({ success: true, data });
+    const data = await verifyLicence(req.params.id)
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[verifyLicencePublic]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
-export const licenceRenewals = async (req: Request, res: Response) => {
+// ── GET /api/licences/renewals ────────────────────────────────────────────────
+export const licenceRenewals = async (_req: Request, res: Response) => {
   try {
-    const data = await getLicenceRenewals();
-    res.json({ success: true, data });
+    const data = await getLicenceRenewals()
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[licenceRenewals]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
+// ── GET /api/licences/:id/history ─────────────────────────────────────────────
 export const licenceHistory = async (req: Request, res: Response) => {
   try {
-    const data = await getLicenceHistory(req.params.id as string);
-    res.json({ success: true, data });
+    const data = await getLicenceHistory(req.params.id)
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(404).json({ success: false, error: error.message });
+    console.error('[licenceHistory]', error.message)
+    res.status(404).json({ success: false, error: error.message })
   }
-};
+}
 
+// ── GET /api/licences/user/:userId ────────────────────────────────────────────
 export const licencesByUser = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.params
     if (!userId) {
-      return res
-        .status(400)
-        .json({ success: false, error: "userId is required" });
+      return res.status(400).json({ success: false, error: 'userId is required' })
     }
-    const data = await getLicencesByUser(userId as string);
-    res.json({ success: true, data });
+    const data = await getLicencesByUser(userId)
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[licencesByUser]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
-export const mostCommonLicenceTypes = async (req: Request, res: Response) => {
+// ── GET /api/licences/common-types ────────────────────────────────────────────
+export const mostCommonLicenceTypes = async (_req: Request, res: Response) => {
   try {
-    const data = await getMostCommonLicenceTypes();
-    res.json({ success: true, data });
+    const data = await getMostCommonLicenceTypes()
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[mostCommonLicenceTypes]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}
 
-export const suspendedLicences = async (req: Request, res: Response) => {
+// ── GET /api/licences/suspended ───────────────────────────────────────────────
+export const suspendedLicences = async (_req: Request, res: Response) => {
   try {
-    const data = await getSuspendedLicences();
-    res.json({ success: true, data });
+    const data = await getSuspendedLicences()
+    res.json({ success: true, data })
   } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[suspendedLicences]', error.message)
+    res.status(500).json({ success: false, error: error.message })
   }
-};
+}

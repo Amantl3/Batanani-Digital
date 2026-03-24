@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { Menu, X, Bell, ChevronDown, LogOut, User, Settings, Search } from 'lucide-react'
+import { Menu, X, Bell, ChevronDown, LogOut, User, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useAuth }    from '@/hooks/useAuth'
@@ -15,6 +15,8 @@ const NAV = [
   { label: 'Dashboard',    path: '/dashboard',   requiresAuth: false },
   { label: 'Publications', path: '/publications',requiresAuth: false },
   { label: 'My Portal',    path: '/portal',      requiresAuth: true  },
+  { label: 'Analytics Map', path: '/map', requiresAuth: false },
+  { label: 'Contact',      path: '/contact',     requiresAuth: false }
 ]
 
 export default function Navbar() {
@@ -147,12 +149,6 @@ export default function Navbar() {
                           className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
                         >
                           <User className="h-4 w-4 text-slate-400" /> My Portal
-                        </button>
-                        <button
-                          onClick={() => { setProfileOpen(false); navigate('/settings') }}
-                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                        >
-                          <Settings className="h-4 w-4 text-slate-400" /> Settings
                         </button>
                         <div className="border-t border-slate-100 pt-1">
                           <button

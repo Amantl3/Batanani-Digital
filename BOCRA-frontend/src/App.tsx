@@ -26,6 +26,10 @@ const CompliancePage         = lazy(() => import('@pages/portal/CompliancePage')
 const FeesPage                = lazy(() => import('@pages/portal/FeesPage'))
 const RenewLicensePage        = lazy(() => import('@pages/portal/RenewLicensePage'))
 const ApprovalApplicationPage = lazy(() => import('@pages/portal/ApprovalApplicationPage'))
+const PaymentHistoryPage      = lazy(() => import('@pages/portal/PaymentHistoryPage'))
+const ComplaintsMapPage = lazy(() => import('@pages/ComplaintsMapPage'));
+const ContactPage       = lazy(() => import('@pages/ContactPage'));
+const SitemapPage       = lazy(() => import('@pages/SitemapPage'))
 
 
 
@@ -59,7 +63,10 @@ export default function App() {
             <Route path="/portal/pay" element={<FeesPage/>} />
             <Route path="/portal/renew" element={<RenewLicensePage/>} />
             <Route path="/portal/type-approval" element={<ApprovalApplicationPage/>} />
-
+        <Route path="/portal/payment-history" element={<PaymentHistoryPage />} />
+        <Route path="/map" element={<ComplaintsMapPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/sitemap" element={<SitemapPage />} />
 
             {/* ── Auth-protected ────────────────────────── */}
             <Route element={<ProtectedRoute />}>

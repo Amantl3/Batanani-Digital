@@ -299,15 +299,15 @@ export default function HomePage() {
               <img src="/your-image.jpg" alt="..." className="h-full w-full object-cover" />
 
               Suggested images:
-              [top-left]    bocraB.jpg      — BOCRA building / office exterior
-              [top-right]   gabsCBD.jpg     — Gaborone CBD skyline
-              [bottom-left] OkavangoD.jpg   — Okavango Delta aerial
-              [bottom-right] smartphone.jpg — Person using smartphone in Botswana
+              [top-left]    bocraB.jpg          — BOCRA building / office exterior
+              [top-right]   gabsCBD.jpg         — Gaborone CBD skyline
+              [bottom-left] OkavangoD.jpeg      — Okavango Delta aerial
+              [bottom-right] DigitalConnectivity.png — Digital connectivity / smartphone
             */}
             <img src="/bocraB.jpg"    alt="BOCRA building"        className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#1e3a5f'; (e.target as HTMLImageElement).alt = '' }} />
             <img src="/gabsCBD.jpg"   alt="Gaborone CBD"          className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#1a3a5c' }} />
-            <img src="/OkavangoD.jpg" alt="Okavango Delta"        className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#164a3a' }} />
-            <img src="/smartphone.jpg" alt="Digital connectivity" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#2d1a3a' }} />
+            <img src="/OkavangoD.jpeg" alt="Okavango Delta"        className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#164a3a' }} />
+            <img src="/DigitalConnectivity.png" alt="Digital connectivity" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#2d1a3a' }} />
           </div>
         </div>
       </section>

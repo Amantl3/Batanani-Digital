@@ -34,12 +34,14 @@ router.get("/common-types", mostCommonLicenceTypes);
 router.get("/suspended", suspendedLicences);
 
 // User specific — protected
+router.get("/my-applications", protect, licencesByUser);
 router.get("/user/:userId", protect, licencesByUser);
 
-// CRUD — protect write operations
+// CRUD
 router.get("/", listLicences);
-router.get("/:id", getLicence);
+router.post("/apply", protect, applyForLicence);
 router.post("/", protect, applyForLicence);
+router.get("/:id", getLicence);
 router.patch("/:id/status", protect, updateStatus);
 router.delete("/:id", protect, removeLicence);
 

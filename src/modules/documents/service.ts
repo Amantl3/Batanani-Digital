@@ -3,20 +3,20 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export async function getAllDocuments() {
-  return prisma.document.findMany({
+  return prisma.Document.findMany({
     orderBy: { publishedAt: 'desc' },
   })
 }
 
 export async function getDocumentById(id: string) {
-  return prisma.document.findUnique({ where: { id } })
+  return prisma.Document.findUnique({ where: { id } })
 }
 
 export async function seedDocuments() {
-  const count = await prisma.document.count()
+  const count = await prisma.Document.count()
   if (count > 0) return { message: 'Already seeded' }
 
-  await prisma.document.createMany({
+  await prisma.docment.createMany({
     data: [
       {
         title:    'Draft Cybersecurity Policy for Electronic Communications Networks',

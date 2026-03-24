@@ -18,11 +18,7 @@ export const createComplaint = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "providerLicenceId, category, description and contact are required" });
     }
     const data = await submitComplaint({ providerLicenceId, category, description, contact, attachments });
-    res.status(201).json({ 
-      success: true, 
-      referenceNumber: data.referenceNumber,
-      data 
-    });
+    res.status(201).json({ success: true, data });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

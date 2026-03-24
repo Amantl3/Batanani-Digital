@@ -11,7 +11,6 @@ import licenceRoutes from "./modules/licences/routes";
 import complaintRoutes from "./modules/complaints/routes";
 import authRoutes from "./modules/auth/routes";
 import chatRoutes from "./modules/chat/routes";
-import documentRoutes from './modules/documents/routes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -72,7 +71,6 @@ app.use("/api/complaints", complaintRoutes);
 app.use("/api/licences", licenceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/chat", chatRoutes);
-app.use("/api/documents", documentRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

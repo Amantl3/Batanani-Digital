@@ -44,3 +44,16 @@ model ChatMessage {
   language  String   @default("en")
   createdAt DateTime @default(now())
 }
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String
+  category    String
+  summary     String
+  fileUrl     String
+  fileName    String
+  fileSize    String
+  featured    Boolean  @default(false)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+}

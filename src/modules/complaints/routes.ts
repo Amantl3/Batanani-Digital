@@ -9,23 +9,21 @@ import {
   complaintsByCategory,
   complaintsByProvider,
   recentComplaints,
+  getMyComplaints,
 } from "./controller";
+import { protect } from "../../middleware/auth";
 
 const router = Router();
 
-// Stats
 router.get("/stats", complaintStats);
 router.get("/by-category", complaintsByCategory);
 router.get("/by-provider", complaintsByProvider);
 router.get("/recent", recentComplaints);
-
-// Track by reference number (what frontend uses after submit)
+router.get("/mine", protect, getMyComplaints);
 router.get("/track/:refNumber", trackComplaintByRef);
-
-// CRUD
 router.get("/", listComplaints);
 router.get("/:id", getComplaint);
-router.post("/", createComplaint);
-router.patch("/:id/status", updateStatus);
+router.post("/", protect, createComplaint);
+router.patch("/:id/status", protect, updateStatus);
 
 export default router;

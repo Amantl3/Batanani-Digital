@@ -1,171 +1,176 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Info, CheckCircle, X, CreditCard } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { CreditCard, Download, CheckCircle, Clock, AlertCircle, ArrowLeft, FileText, ChevronRight } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/utils/formatters'
+import { cn } from '@/utils/cn'
 
-const MOCK_INVOICES = [
-  { ref: 'INV-2025-001', desc: 'Licence renewal fee', amount: 48500, date: '2025-01-15', status: 'Unpaid' },
-  { ref: 'INV-2025-002', desc: 'Type approval fee', amount: 2200, date: '2024-11-20', status: 'Paid' },
-  { ref: 'INV-2025-003', desc: 'Annual spectrum fee', amount: 15000, date: '2024-09-01', status: 'Unpaid' },
+const INVOICES = [
+  { id: 'INV-2025-0041', desc: 'Annual licence fee — Telecom Category',   amount: 48500, due: '2025-04-01', issued: '2025-03-01', status: 'outstanding', period: '2025/26' },
+  { id: 'INV-2025-0028', desc: 'Spectrum utilisation fee — H1 2025',      amount: 12400, due: '2025-04-15', issued: '2025-03-10', status: 'outstanding', period: 'H1 2025' },
+  { id: 'INV-2024-0187', desc: 'Annual licence fee — Telecom Category',   amount: 46000, due: '2024-04-01', issued: '2024-03-01', status: 'paid',        period: '2024/25' },
+  { id: 'INV-2024-0153', desc: 'Type approval fee — 3 device types',      amount: 7500,  due: '2024-02-28', issued: '2024-02-01', status: 'paid',        period: 'FY 2024' },
+  { id: 'INV-2024-0092', desc: 'Licence amendment fee',                   amount: 2200,  due: '2024-01-15', issued: '2023-12-20', status: 'paid',        period: 'FY 2024' },
+  { id: 'INV-2023-0311', desc: 'Annual licence fee — Telecom Category',   amount: 44000, due: '2023-04-01', issued: '2023-03-01', status: 'paid',        period: '2023/24' },
 ]
 
-export default function RegulatoryFeesPage() {
-  const [search, setSearch] = useState('')
-  const [payingInvoice, setPayingInvoice] = useState<string | null>(null)
-  const [paidInvoices, setPaidInvoices] = useState<string[]>(MOCK_INVOICES.filter(i => i.status === 'Paid').map(i => i.ref))
-  const [modalInvoice, setModalInvoice] = useState<typeof MOCK_INVOICES[0] | null>(null)
-  const [processingPayment, setProcessingPayment] = useState(false)
-  const [paymentSuccess, setPaymentSuccess] = useState(false)
+const FEE_SCHEDULE = [
+  { category: 'Telecommunications licence',   annual: 'BWP 44,000 – 200,000',  note: 'Based on revenue tier' },
+  { category: 'Internet service provider',    annual: 'BWP 20,000 – 80,000',   note: 'Based on subscriber base' },
+  { category: 'Broadcasting licence',         annual: 'BWP 15,000 – 120,000',  note: 'Free-to-air vs pay TV' },
+  { category: 'Postal / courier service',     annual: 'BWP 5,000 – 30,000',    note: 'Based on coverage area' },
+  { category: 'Type approval (per device)',   annual: 'BWP 2,500',             note: 'One-time per device model' },
+  { category: 'Spectrum utilisation fee',     annual: 'BWP 8,000 – 50,000',    note: 'Based on bandwidth & region' },
+  { category: 'Domain registration (.co.bw)', annual: 'BWP 200',               note: 'Per domain per year' },
+  { category: 'Licence amendment fee',        annual: 'BWP 2,200',             note: 'Per amendment request' },
+]
 
-  const filteredInvoices = MOCK_INVOICES.filter(
-    i =>
-      i.ref.toLowerCase().includes(search.toLowerCase()) ||
-      i.desc.toLowerCase().includes(search.toLowerCase()) ||
-      formatDate(i.date).includes(search)
-  )
+const STATUS_STYLE: Record<string, { badge: string; icon: React.ElementType }> = {
+  outstanding: { badge: 'badge-warning', icon: Clock        },
+  paid:        { badge: 'badge-success', icon: CheckCircle  },
+  overdue:     { badge: 'badge-danger',  icon: AlertCircle  },
+}
 
-  const totalUnpaid = filteredInvoices
-    .filter(i => !paidInvoices.includes(i.ref))
-    .reduce((acc, i) => acc + i.amount, 0)
+export default function FeesPage() {
+  const [activeTab, setActiveTab] = useState<'invoices' | 'schedule'>('invoices')
 
-  const openPaymentModal = (inv: typeof MOCK_INVOICES[0]) => {
-    setModalInvoice(inv)
-    setPaymentSuccess(false)
-  }
-
-  const handlePayment = () => {
-    if (!modalInvoice) return
-    setProcessingPayment(true)
-    setTimeout(() => {
-      setPaidInvoices(prev => [...prev, modalInvoice.ref])
-      setProcessingPayment(false)
-      setPaymentSuccess(true)
-    }, 2000) // simulate async gateway payment
-  }
+  const outstanding = INVOICES.filter(i => i.status === 'outstanding')
+  const totalOwed   = outstanding.reduce((sum, i) => sum + i.amount, 0)
 
   return (
     <div className="min-h-screen bg-slate-50">
       <section className="relative overflow-hidden bg-bocra-navy py-12">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-bocra-gold/15 via-transparent to-transparent" />
         <div className="container-page relative">
-          <h1 className="font-heading text-3xl font-bold text-white">Regulatory fees & invoices</h1>
-          <p className="mt-1 text-slate-400">View and pay your BOCRA invoices</p>
+          <nav className="breadcrumb mb-3">
+            <Link to="/" className="breadcrumb-link">Home</Link><span className="breadcrumb-sep">/</span>
+            <Link to="/portal" className="breadcrumb-link">My Portal</Link><span className="breadcrumb-sep">/</span>
+            <span className="text-white/60">Regulatory fees</span>
+          </nav>
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <Link to="/portal" className="rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white transition-colors"><ArrowLeft className="h-5 w-5" /></Link>
+              <div>
+                <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-bocra-gold/20 px-3 py-1"><CreditCard className="h-3.5 w-3.5 text-bocra-gold" /><span className="text-xs font-semibold text-bocra-gold">Regulatory fees</span></div>
+                <h1 className="font-heading text-3xl font-bold text-white">Fees & invoices</h1>
+                <p className="mt-1 text-slate-400">View your invoices, payment history, and the BOCRA fee schedule</p>
+              </div>
+            </div>
+            {totalOwed > 0 && (
+              <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
+                <p className="text-xs font-semibold text-amber-300">Total outstanding</p>
+                <p className="font-heading text-2xl font-bold text-white">{formatCurrency(totalOwed)}</p>
+                <Link to="/portal/pay" className="mt-2 flex items-center gap-1.5 text-xs font-bold text-bocra-gold hover:underline">Pay now <ChevronRight className="h-3 w-3" /></Link>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
-      <div className="container-page grid gap-6 py-8 lg:grid-cols-[1fr_300px]">
-        <div className="overflow-hidden rounded-2xl bg-white shadow-card">
-          <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-200">
-            <Search className="h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search invoices..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full border-none bg-slate-100 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-bocra-blue text-sm"
-            />
-          </div>
-
-          <div className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
-            {filteredInvoices.length > 0 ? (
-              filteredInvoices.map(inv => (
-                <div key={inv.ref} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50">
-                  <div>
-                    <p className="text-sm text-slate-800">{inv.desc}</p>
-                    <p className="text-xs text-slate-400">{formatDate(inv.date)} — {inv.ref}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className={`text-sm font-semibold ${paidInvoices.includes(inv.ref) ? 'text-emerald-600' : 'text-slate-900'}`}>
-                      {formatCurrency(inv.amount)}
-                    </span>
-                    {!paidInvoices.includes(inv.ref) && (
-                      <button
-                        onClick={() => openPaymentModal(inv)}
-                        className="rounded-xl bg-bocra-teal px-4 py-2 text-xs font-semibold text-white hover:bg-teal-600 transition-all"
-                      >
-                        Pay now
-                      </button>
-                    )}
-                    {paidInvoices.includes(inv.ref) && <CheckCircle className="h-5 w-5 text-emerald-600" />}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="p-6 text-sm text-slate-500">No invoices found.</p>
-            )}
-          </div>
-
-          <div className="px-6 py-4 border-t border-slate-200 flex justify-between font-semibold text-slate-900">
-            <span>Total unpaid</span>
-            <span>{formatCurrency(totalUnpaid)}</span>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-card space-y-2">
-            <p className="font-bold text-slate-800 flex items-center gap-2">
-              <Info className="h-4 w-4 text-bocra-teal" />Need assistance?
-            </p>
-            <p className="text-xs text-slate-500">Mon–Fri, 07:30–17:00 CAT</p>
-            <a href="tel:+26739570000" className="block text-xs text-bocra-teal hover:underline">+267 395 7755</a>
-            <a href="mailto:licensing@bocra.org.bw" className="block text-xs text-bocra-teal hover:underline">licensing@bocra.org.bw</a>
-          </div>
-        </div>
-      </div>
-
-      {/* Payment Modal */}
-      <AnimatePresence>
-        {modalInvoice && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
-            >
-              {!paymentSuccess ? (
-                <>
-                  <h2 className="text-xl font-bold text-slate-900 mb-4">Pay Invoice</h2>
-                  <p className="text-sm text-slate-700 mb-2">{modalInvoice.desc}</p>
-                  <p className="text-sm text-slate-500 mb-4">{modalInvoice.ref} — {formatDate(modalInvoice.date)}</p>
-                  <div className="mb-4 flex justify-between items-center bg-slate-50 p-3 rounded-md border border-slate-200">
-                    <span className="font-semibold text-slate-800">Amount</span>
-                    <span className="font-bold text-bocra-teal">{formatCurrency(modalInvoice.amount)}</span>
-                  </div>
-                  <button
-                    onClick={handlePayment}
-                    disabled={processingPayment}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-bocra-teal px-6 py-3 text-white font-semibold hover:bg-teal-600 transition-all disabled:opacity-60"
-                  >
-                    {processingPayment ? 'Processing…' : <><CreditCard className="h-4 w-4" /> Confirm Payment</>}
-                  </button>
-                  <button
-                    onClick={() => setModalInvoice(null)}
-                    className="w-full mt-3 rounded-xl border border-slate-200 px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <div className="text-center space-y-4">
-                  <CheckCircle className="mx-auto h-12 w-12 text-emerald-600" />
-                  <p className="text-slate-900 font-semibold">Payment successful!</p>
-                  <button
-                    onClick={() => setModalInvoice(null)}
-                    className="mt-2 w-full rounded-xl bg-bocra-teal px-6 py-3 text-white font-semibold hover:bg-teal-600 transition-all"
-                  >
-                    Close
-                  </button>
-                </div>
-              )}
-            </motion.div>
+      <div className="container-page py-8">
+        {/* Outstanding alert */}
+        {outstanding.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+            className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+              <div>
+                <p className="font-semibold text-amber-900">{outstanding.length} outstanding invoice{outstanding.length > 1 ? 's' : ''}</p>
+                <p className="text-sm text-amber-700">Total due: {formatCurrency(totalOwed)}</p>
+              </div>
+            </div>
+            <Link to="/portal/pay" className="flex items-center gap-2 rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-amber-700 transition-colors">
+              <CreditCard className="h-4 w-4" /> Pay outstanding fees
+            </Link>
           </motion.div>
         )}
-      </AnimatePresence>
+
+        {/* Tabs */}
+        <div className="mb-6 flex gap-1 rounded-xl bg-white p-1 shadow-card w-fit">
+          {[{ key: 'invoices', label: 'My invoices' }, { key: 'schedule', label: 'Fee schedule' }].map(t => (
+            <button key={t.key} onClick={() => setActiveTab(t.key as 'invoices' | 'schedule')}
+              className={cn('rounded-lg px-5 py-2 text-sm font-semibold transition-all', activeTab === t.key ? 'bg-bocra-navy text-white' : 'text-slate-600 hover:bg-slate-50')}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Invoices tab */}
+        {activeTab === 'invoices' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-hidden rounded-2xl bg-white shadow-card">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h2 className="font-heading text-base font-bold text-slate-900">Invoice history</h2>
+              <button className="flex items-center gap-1.5 text-xs font-semibold text-bocra-teal hover:underline">
+                <Download className="h-3.5 w-3.5" /> Download all
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead><tr><th>Invoice no.</th><th>Description</th><th className="hidden md:table-cell">Period</th><th className="hidden lg:table-cell">Due date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {INVOICES.map(inv => {
+                    const s = STATUS_STYLE[inv.status]
+                    const Icon = s.icon
+                    return (
+                      <tr key={inv.id}>
+                        <td><span className="font-mono text-xs font-bold text-bocra-teal">{inv.id}</span></td>
+                        <td className="max-w-[200px]"><p className="truncate text-sm text-slate-800">{inv.desc}</p></td>
+                        <td className="hidden md:table-cell text-slate-500 text-xs">{inv.period}</td>
+                        <td className="hidden lg:table-cell text-slate-500">{formatDate(inv.due)}</td>
+                        <td><span className="font-semibold text-slate-900">{formatCurrency(inv.amount)}</span></td>
+                        <td>
+                          <span className={cn('badge', s.badge)}>
+                            <Icon className="h-3 w-3" /> {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-3">
+                            <button className="flex items-center gap-1 text-xs font-medium text-bocra-teal hover:underline">
+                              <FileText className="h-3 w-3" /> PDF
+                            </button>
+                            {inv.status === 'outstanding' && (
+                              <Link to="/portal/pay" className="flex items-center gap-1 text-xs font-bold text-bocra-navy hover:underline">
+                                Pay <ChevronRight className="h-3 w-3" />
+                              </Link>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Fee schedule tab */}
+        {activeTab === 'schedule' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-hidden rounded-2xl bg-white shadow-card">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h2 className="font-heading text-base font-bold text-slate-900">BOCRA fee schedule 2025/26</h2>
+              <button className="flex items-center gap-1.5 text-xs font-semibold text-bocra-teal hover:underline"><Download className="h-3.5 w-3.5" /> Download gazette</button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead><tr><th>Licence / service category</th><th>Annual fee</th><th className="hidden md:table-cell">Notes</th></tr></thead>
+                <tbody>
+                  {FEE_SCHEDULE.map(f => (
+                    <tr key={f.category}>
+                      <td className="font-medium">{f.category}</td>
+                      <td><span className="font-semibold text-bocra-teal">{f.annual}</span></td>
+                      <td className="hidden md:table-cell text-slate-500 text-xs">{f.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-t border-slate-100 px-6 py-4">
+              <p className="text-xs text-slate-500">Fees are gazetted annually. The above rates are effective from 1 April 2025. Fees are subject to revision by BOCRA with 30 days' notice.</p>
+            </div>
+          </motion.div>
+        )}
+      </div>
     </div>
   )
 }

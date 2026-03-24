@@ -277,9 +277,15 @@ export default function PortalPage() {
               <p className="mt-1 text-xs text-slate-500">{t('portal.support_hours')}</p>
             </div>
             <div className="card-body space-y-2 text-sm">
-              <a href="tel:+26739570000" className="flex items-center gap-2 text-bocra-blue hover:underline">📞 +267 395 7755</a>
-              <a href="mailto:licensing@bocra.org.bw" className="flex items-center gap-2 text-bocra-blue hover:underline">✉️ licensing@bocra.org.bw</a>
-              <button className="flex items-center gap-2 text-bocra-blue hover:underline">💬 Live chat (business hours)</button>
+              <a href="tel:+26739570000" className="flex items-center gap-2 text-bocra-blue hover:underline">
+                +267 395 7755
+              </a>
+              <a href="mailto:licensing@bocra.org.bw" className="flex items-center gap-2 text-bocra-blue hover:underline">
+                ✉️ licensing@bocra.org.bw
+              </a>
+              <button className="flex items-center gap-2 text-bocra-blue hover:underline">
+                💬 Live chat (business hours)
+              </button>
             </div>
           </div>
         </div>

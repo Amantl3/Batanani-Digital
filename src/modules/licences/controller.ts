@@ -65,7 +65,8 @@ export const listLicences = async (req: Request, res: Response) => {
 // ── GET /api/licences/:id ─────────────────────────────────────────────────────
 export const getLicence = async (req: Request, res: Response) => {
   try {
-    const data = await getLicenceById(req.params.id)
+    const id   = String(req.params.id)
+    const data = await getLicenceById(id)
     res.json({ success: true, data: mapLicence(data) })
   } catch (error: any) {
     console.error('[getLicence]', error.message)
@@ -98,7 +99,7 @@ export const updateStatus = async (req: Request, res: Response) => {
     if (!status) {
       return res.status(400).json({ success: false, error: 'status is required' })
     }
-    const data = await updateLicenceStatus(req.params.id, status)
+    const data = await updateLicenceStatus(String(req.params.id), status)
     res.json({ success: true, data: mapLicence(data) })
   } catch (error: any) {
     console.error('[updateStatus]', error.message)
@@ -109,7 +110,7 @@ export const updateStatus = async (req: Request, res: Response) => {
 // ── DELETE /api/licences/:id ──────────────────────────────────────────────────
 export const removeLicence = async (req: Request, res: Response) => {
   try {
-    const data = await deleteLicence(req.params.id)
+    const data = await deleteLicence(String(req.params.id))
     res.json({ success: true, data })
   } catch (error: any) {
     console.error('[removeLicence]', error.message)
@@ -187,7 +188,7 @@ export const licencesThisMonth = async (_req: Request, res: Response) => {
 // ── GET /api/licences/:id/verify ──────────────────────────────────────────────
 export const verifyLicencePublic = async (req: Request, res: Response) => {
   try {
-    const data = await verifyLicence(req.params.id)
+    const data = await verifyLicence(String(req.params.id))
     res.json({ success: true, data })
   } catch (error: any) {
     console.error('[verifyLicencePublic]', error.message)
@@ -209,7 +210,7 @@ export const licenceRenewals = async (_req: Request, res: Response) => {
 // ── GET /api/licences/:id/history ─────────────────────────────────────────────
 export const licenceHistory = async (req: Request, res: Response) => {
   try {
-    const data = await getLicenceHistory(req.params.id)
+    const data = await getLicenceHistory(String(req.params.id))
     res.json({ success: true, data })
   } catch (error: any) {
     console.error('[licenceHistory]', error.message)
@@ -220,7 +221,7 @@ export const licenceHistory = async (req: Request, res: Response) => {
 // ── GET /api/licences/user/:userId ────────────────────────────────────────────
 export const licencesByUser = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params
+    const userId = String(req.params.userId)
     if (!userId) {
       return res.status(400).json({ success: false, error: 'userId is required' })
     }

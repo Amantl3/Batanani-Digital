@@ -375,26 +375,6 @@ function MyComponent() {
 
 ## 📝 Environment Variables Reference
 
-### Backend `.env`
-```env
-DATABASE_URL=
-DIRECT_URL=
-SUPABASE_URL= your_supabase_url
-SUPABASE_KEY=your_supabase_anon_key
-GROQ_API_KEY=your_groq_api_key
-TWILIO_ACCOUNT_SID=your_twilio_account_sid
-TWILIO_AUTH_TOKEN=your_twilio_auth_token
-TWILIO_WHATSAPP_NUMBER=
-PORT=3000
-NODE_ENV=development
-```
-
-### Frontend `.env`
-```env
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_SUPABASE_URL=
-VITE_SUPABASE_KEY=your_supabase_anon_key
-```
 
 ## 📦 Available Scripts
 

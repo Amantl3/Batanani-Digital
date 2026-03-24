@@ -5,6 +5,7 @@ import {
   Search, ArrowRight, FileText, Shield, Globe, Lock,
   Zap, Phone, ChevronRight, PlayCircle, TrendingUp,
   Users, Award, Radio, MapPin,
+  ArrowBigRightDash,
 } from 'lucide-react'
 
 // ── Animation helpers ─────────────────────────────────────────────────────────
@@ -159,8 +160,8 @@ export default function HomePage() {
               <Link to="/complaints" className="flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/20">
                 <Shield className="h-4 w-4" /> File a complaint
               </Link>
-              <Link to="/dashboard" className="flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/20">
-                <PlayCircle className="h-4 w-4" /> Live dashboard
+              <Link to="/portal" className="flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/20">
+                <ArrowBigRightDash className="h-4 w-4" /> Access portal
               </Link>
             </motion.div>
           </motion.div>
@@ -255,10 +256,7 @@ export default function HomePage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          BOTSWANA STORY — split image + text
-          Images go in /public/ folder, referenced as /filename.jpg
-          Left col: text
-          Right col: 2x2 grid of images
+          BOTSWANA STORY 
       ══════════════════════════════════════════════════════ */}
       <section className="overflow-hidden bg-bocra-navy">
         <div className="grid lg:grid-cols-2">
@@ -292,22 +290,11 @@ export default function HomePage() {
           </InView>
 
           {/* Image grid — 2×2 */}
-          {/* Put images in /public/ and reference as /filename.jpg */}
           <div className="grid min-h-[500px] grid-cols-2 grid-rows-2 gap-1">
-            {/*
-              Replace each div below with:
-              <img src="/your-image.jpg" alt="..." className="h-full w-full object-cover" />
-
-              Suggested images:
-              [top-left]    bocraB.jpg      — BOCRA building / office exterior
-              [top-right]   gabsCBD.jpg     — Gaborone CBD skyline
-              [bottom-left] OkavangoD.jpg   — Okavango Delta aerial
-              [bottom-right] smartphone.jpg — Person using smartphone in Botswana
-            */}
             <img src="/bocraB.jpg"    alt="BOCRA building"        className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#1e3a5f'; (e.target as HTMLImageElement).alt = '' }} />
             <img src="/gabsCBD.jpg"   alt="Gaborone CBD"          className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#1a3a5c' }} />
-            <img src="/OkavangoD.jpg" alt="Okavango Delta"        className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#164a3a' }} />
-            <img src="/smartphone.jpg" alt="Digital connectivity" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#2d1a3a' }} />
+            <img src="/Kasane-Drone.jpg" alt="Okavango Delta"        className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#164a3a' }} />
+            <img src="/towerA.jpg" alt="Digital connectivity" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#2d1a3a' }} />
           </div>
         </div>
       </section>
@@ -368,7 +355,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden py-24">
         {/* Background image with overlay */}
         <img
-          src="/cta-bg.jpg"
+          src="/Kasane-Drone.jpg"
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
@@ -392,8 +379,8 @@ export default function HomePage() {
               <Link to="/complaints" className="flex items-center gap-2 rounded-xl bg-bocra-red px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-red-800">
                 <Shield className="h-5 w-5" /> File a complaint now
               </Link>
-              <a href="tel:0800600125" className="flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-8 py-4 text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20">
-                <Phone className="h-5 w-5" /> 0800 600 125 (free)
+              <a href="tel:+2673957755" className="flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-8 py-4 text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20">
+                <Phone className="h-5 w-5" /> +267 395 7755
               </a>
             </motion.div>
           </InView>
@@ -416,12 +403,6 @@ export default function HomePage() {
               <p className="mb-6 text-sm leading-relaxed text-slate-400">
                 Botswana Communications Regulatory Authority — regulating telecommunications, broadcasting, postal and internet services in the public interest.
               </p>
-              <div className="mb-6 flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-bocra-teal" />
-                <div className="h-3 w-3 rounded-full bg-bocra-green" />
-                <div className="h-3 w-3 rounded-full bg-bocra-red" />
-                <div className="h-3 w-3 rounded-full bg-bocra-gold" />
-              </div>
               <div className="flex gap-3">
                 {[
                   { icon: '𝕏', label: 'Twitter / X' },
@@ -458,9 +439,9 @@ export default function HomePage() {
         <div className="container-page border-b border-white/10 py-8">
           <div className="grid gap-6 sm:grid-cols-3">
             {[
-              { icon: Phone,    label: 'Toll-free helpline', value: '0800 600 125',           sub: 'Mon–Fri, 07:30–17:00 CAT' },
+              { icon: Phone,    label: 'Toll-free helpline', value: '+267 395 7755',           sub: 'Mon–Fri, 07:30–17:00 CAT' },
               { icon: Globe,    label: 'Email',              value: 'info@bocra.org.bw',       sub: 'General enquiries'        },
-              { icon: MapPin,   label: 'Physical address',   value: 'Plot 50671, Segkoma Road',sub: 'Gaborone, Botswana'       },
+              { icon: MapPin,   label: 'Physical address',   value: 'Plot 50671, Independence Ave',sub: 'Gaborone, Botswana'       },
             ].map((c) => (
               <div key={c.label} className="flex items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bocra-teal/10">
@@ -488,7 +469,7 @@ export default function HomePage() {
               ))}
               <div className="flex overflow-hidden rounded-full border border-white/15">
                 <button className="bg-bocra-teal px-3 py-1 text-xs font-semibold text-white">EN</button>
-                <button className="px-3 py-1 text-xs font-medium text-slate-400 transition-colors hover:text-white">TN</button>
+                <button className="px-3 py-1 text-xs font-medium text-slate-400 transition-colors hover:text-white">ST</button>
               </div>
             </div>
           </div>

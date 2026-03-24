@@ -12,7 +12,7 @@ const NAV = [
   { label: 'Home',         path: '/',            requiresAuth: false },
   { label: 'Licensing',    path: '/licensing',   requiresAuth: false },
   { label: 'Complaints',   path: '/complaints',  requiresAuth: false },
-  { label: 'Dashboard',    path: '/dashboard',   requiresAuth: false },
+  { label: 'Dashboard',    path: '/dashboard',   requiresAuth: true },
   { label: 'Publications', path: '/publications',requiresAuth: false },
   { label: 'My Portal',    path: '/portal',      requiresAuth: true  },
 ]
@@ -41,15 +41,15 @@ export default function Navbar() {
             All systems operational
           </div>
           <div className="flex items-center gap-5 text-xs text-white/40">
-            <a href="tel:0800600125" className="transition-colors hover:text-white">
-              📞 0800 600 125 (toll-free)
+            <a href="tel:+2673957755" className="transition-colors hover:text-white">
+              + 267 395 7755
             </a>
             <a href="mailto:info@bocra.org.bw" className="transition-colors hover:text-white">
               ✉ info@bocra.org.bw
             </a>
             <div className="flex overflow-hidden rounded border border-white/10">
               <button className="bg-bocra-teal px-2.5 py-0.5 text-xs font-semibold text-white">EN</button>
-              <button className="px-2.5 py-0.5 text-xs text-white/40 transition-colors hover:text-white">TN</button>
+              <button className="px-2.5 py-0.5 text-xs text-white/40 transition-colors hover:text-white">ST</button>
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@ export default function Navbar() {
             ))}
           </nav>
           <div className="mt-4 space-y-1 border-t border-white/10 pt-4 text-xs text-white/40">
-            <p>0800 600 125 (toll-free)</p>
+            <p>+ 267 395 7755</p>
             <p>info@bocra.org.bw</p>
           </div>
         </div>

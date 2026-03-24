@@ -252,7 +252,7 @@ export default function PortalPage() {
             </div>
             <div className="card-body space-y-2 text-sm">
               <a href="tel:+26739570000" className="flex items-center gap-2 text-bocra-blue hover:underline">
-                📞 +267 395 7755
+                +267 395 7755
               </a>
               <a href="mailto:licensing@bocra.org.bw" className="flex items-center gap-2 text-bocra-blue hover:underline">
                 ✉️ licensing@bocra.org.bw

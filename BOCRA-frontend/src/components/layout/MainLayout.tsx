@@ -1,13 +1,16 @@
-import { Outlet, useLocation } from 'react-router-dom'
-import Navbar      from './Navbar'
-import Footer      from './Footer'
-import AlertBanner from '@components/shared/AlertBanner'
+// src/layouts/MainLayout.tsx
+import { Outlet, useLocation } from 'react-router-dom';
+import Navbar from './Navbar';
+import Footer from './Footer';
+import AlertBanner from '@components/shared/AlertBanner';
+import WhatsAppFloatingIcon from '@components/WhatsAppFloatingIcon';
 
 export default function MainLayout() {
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
+  const showLayoutFooter = pathname !== '/';
 
-  // HomePage has its own built-in footer — don't render the layout footer on /
-  const showLayoutFooter = pathname !== '/'
+  // Your WhatsApp number (Twilio sandbox or your own)
+  const whatsappNumber = '+14155238886'; // replace with your number if needed
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -17,6 +20,9 @@ export default function MainLayout() {
         <Outlet />
       </main>
       {showLayoutFooter && <Footer />}
+
+      {/* Floating WhatsApp Icon */}
+      <WhatsAppFloatingIcon number={whatsappNumber} />
     </div>
-  )
+  );
 }

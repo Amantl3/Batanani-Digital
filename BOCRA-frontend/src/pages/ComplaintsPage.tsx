@@ -98,7 +98,7 @@ function FileUploadZone({ files, onAdd, onRemove }: {
 }) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: onAdd,
-    accept: FILE_UPLOAD.acceptedTypes as Record<string, string[]>,
+    accept: FILE_UPLOAD.acceptedTypes as unknown as Record<string, string[]>,
     maxSize: FILE_UPLOAD.maxSizeBytes,
     maxFiles: FILE_UPLOAD.maxFiles - files.length,
     disabled: files.length >= FILE_UPLOAD.maxFiles,

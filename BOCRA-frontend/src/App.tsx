@@ -24,10 +24,17 @@ const NotFoundPage           = lazy(() => import('@pages/NotFoundPage'))
 const DomainRegistrationPage = lazy(() => import('@pages/portal/DomainRegistrationPage'))
 const CompliancePage         = lazy(() => import('@pages/portal/CompliancePage'))
 const FeesPage                = lazy(() => import('@pages/portal/FeesPage'))
-const RenewLicensePage        = lazy(() => import('@pages/portal/RenewLicensePage'))
+const RenewalLicencePage        = lazy(() => import('@/pages/portal/RenewalLicencePage'))
 const ApprovalApplicationPage = lazy(() => import('@pages/portal/ApprovalApplicationPage'))
+const PaymentHistoryPage      = lazy(() => import('@pages/portal/PaymentHistoryPage'))
+const ComplaintsMapPage = lazy(() => import('@pages/ComplaintsMapPage'));
+const ContactPage       = lazy(() => import('@pages/ContactPage'));
+const SitemapPage       = lazy(() => import('@pages/SitemapPage'))
 
 
+const AdminApplicationsPage = lazy(() => import('@pages/admin/AdminApplicationsPage'))
+const AdminComplaintsPage = lazy(() => import('@pages/admin/AdminComplaintsPage'))
+const AdminDashboardPage = lazy(() => import('@pages/admin/AdminDashboardPage'))
 
 
 export default function App() {
@@ -57,20 +64,27 @@ export default function App() {
             <Route path="/portal"              element={<PortalPage />} />
             <Route path="/portal/compliance" element={<CompliancePage/>} />
             <Route path="/portal/pay" element={<FeesPage/>} />
-            <Route path="/portal/renew" element={<RenewLicensePage/>} />
+            <Route path="/portal/renew" element={<RenewalLicencePage/>} />
             <Route path="/portal/type-approval" element={<ApprovalApplicationPage/>} />
+        <Route path="/portal/payment-history" element={<PaymentHistoryPage />} />
+        <Route path="/map" element={<ComplaintsMapPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/sitemap" element={<SitemapPage />} />
+
+              <Route path="/admin/dashboard"     element={<AdminDashboardPage />} />
+              <Route path="/admin/applications" element={<AdminApplicationsPage />} /> 
+              <Route path="/admin/complaints" element={<AdminComplaintsPage />} /> 
 
 
             {/* ── Auth-protected ────────────────────────── */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/portal"              element={<PortalPage />} />
-              <Route path="/portal/apply"        element={<LicenceApplicationPage />} />
+              {/*<Route path="/portal"              element={<PortalPage />} />
+              <Route path="/portal/apply"        element={<LicenceApplicationPage />} />*/}
             </Route>
 
             {/* ── Admin-only — dashboard hidden from nav ── */}
             {/* Access via /admin/dashboard — not shown in nav */}
             <Route element={<AdminRoute />}>
-              <Route path="/admin/dashboard"     element={<DashboardPage />} />
             </Route>
           </Route>
 

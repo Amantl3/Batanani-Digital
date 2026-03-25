@@ -43,23 +43,22 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: (payload: RegisterPayload) => authService.register(payload),
     onSuccess: () => {
-      toast.success('Account created! Please check your email to verify.')
+      toast.success('Account created! You can now log in.')
       navigate('/login')
     },
     onError: (err: { detail?: string }) => {
       toast.error(err?.detail ?? 'Registration failed. Please try again.')
     },
   })
-
-  const logoutMutation = useMutation({
-    mutationFn: authService.logout,
-    onSettled: () => {
-      store.clearAuth()
-      qc.clear()
-      navigate('/login', { replace: true })
-    },
-  })
-
+const logoutMutation = useMutation({
+  mutationFn: async () => {},
+  onSettled: () => {
+    store.clearAuth()
+    qc.clear()
+    navigate('/login', { replace: true })
+  },
+})
+  
   return {
     user:            store.user,
     isAuthenticated: store.isAuthenticated(),

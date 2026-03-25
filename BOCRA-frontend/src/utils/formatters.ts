@@ -7,12 +7,14 @@ export function formatDate(dateStr: string | null | undefined): string {
   return isValid(d) ? format(d, 'd MMM yyyy') : '—'
 }
 
-export function formatDateTime(dateStr: string): string {
+export function formatDateTime(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—'
   const d = parseISO(dateStr)
   return isValid(d) ? format(d, 'd MMM yyyy, HH:mm') : '—'
 }
 
-export function formatRelative(dateStr: string): string {
+export function formatRelative(dateStr: string | null | undefined): string {
+  if (!dateStr) return '—'
   const d = parseISO(dateStr)
   return isValid(d) ? formatDistanceToNow(d, { addSuffix: true }) : '—'
 }
@@ -34,41 +36,39 @@ export function formatPercent(n: number, decimals = 1): string {
   return `${n.toFixed(decimals)}%`
 }
 
-export function formatDelta(n: number, unit = ''): string {
-  const sign = n > 0 ? '+' : ''
-  return `${sign}${n.toFixed(1)}${unit}`
-}
-
 // ─── Licence / complaint labels ───────────────────────────────────────────────
 const CATEGORY_LABELS: Record<string, string> = {
-  telecom:       'Telecommunications',
-  broadcast:     'Broadcasting',
-  postal:        'Postal',
-  internet:      'Internet',
+  telecom: 'Telecommunications',
+  broadcast: 'Broadcasting',
+  postal: 'Postal',
+  internet: 'Internet',
   type_approval: 'Type Approval',
-  billing:       'Billing dispute',
-  quality:       'Service quality',
-  coverage:      'Coverage issue',
-  data:          'Data / internet',
-  fraud:         'Fraud / scam',
-  other:         'Other',
+  billing: 'Billing dispute',
+  quality: 'Service quality',
+  coverage: 'Coverage issue',
+  data: 'Data / internet',
+  fraud: 'Fraud / scam',
+  other: 'Other',
 }
 
-export function formatCategory(cat: string): string {
+export function formatCategory(cat: string | null | undefined): string {
+  if (!cat) return 'General'
   return CATEGORY_LABELS[cat] ?? cat
 }
 
-export function formatStatus(status: string): string {
+export function formatStatus(status: string | null | undefined): string {
+  if (!status) return 'Pending' // Prevents "replace of undefined" error
   return status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 // ─── Files ────────────────────────────────────────────────────────────────────
 export function formatFileSize(bytes: number): string {
-  if (bytes < 1_024)         return `${bytes} B`
-  if (bytes < 1_048_576)     return `${(bytes / 1_024).toFixed(1)} KB`
-  return                             `${(bytes / 1_048_576).toFixed(1)} MB`
+  if (bytes < 1_024) return `${bytes} B`
+  if (bytes < 1_048_576) return `${(bytes / 1_024).toFixed(1)} KB`
+  return `${(bytes / 1_048_576).toFixed(1)} MB`
 }
 
 export function truncate(str: string, max: number): string {
+  if (!str) return ''
   return str.length <= max ? str : `${str.slice(0, max)}…`
 }

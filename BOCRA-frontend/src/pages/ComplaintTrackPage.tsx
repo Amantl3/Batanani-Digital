@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, CheckCircle, Clock, AlertCircle, XCircle,
-  ArrowRight, Phone, MessageCircle, FileText, RefreshCw,
+  ArrowRight, Phone, MessageCircle, FileText, RefreshCw, Loader2
 } from 'lucide-react'
 
 import { useTrackComplaint } from '@/hooks/useComplaints'
@@ -13,10 +13,10 @@ import { cn } from '@/utils/cn'
 import type { ComplaintStatus } from '@/types'
 
 const STATUS_STEPS: { key: ComplaintStatus; label: string; desc: string; icon: React.ElementType }[] = [
-  { key: 'submitted',  label: 'Submitted',     desc: 'Complaint received by BOCRA',               icon: FileText     },
+  { key: 'submitted',  label: 'Submitted',     desc: 'Complaint received by BOCRA',                icon: FileText     },
   { key: 'in_review',  label: 'Under review',  desc: 'Assigned to a BOCRA officer for assessment', icon: Clock        },
-  { key: 'escalated',  label: 'Escalated',     desc: 'Referred to senior regulatory officer',     icon: AlertCircle  },
-  { key: 'resolved',   label: 'Resolved',      desc: 'Resolution reached and communicated',        icon: CheckCircle  },
+  { key: 'escalated',  label: 'Escalated',     desc: 'Referred to senior regulatory officer',      icon: AlertCircle  },
+  { key: 'resolved',   label: 'Resolved',      desc: 'Resolution reached and communicated',         icon: CheckCircle  },
   { key: 'closed',     label: 'Closed',        desc: 'Case formally closed',                       icon: XCircle      },
 ]
 const STATUS_ORDER: Record<ComplaintStatus, number> = {
@@ -74,25 +74,16 @@ export default function ComplaintTrackPage() {
               <Search className="h-8 w-8 text-bocra-navy" />
             </div>
             <h2 className="mb-2 font-heading text-xl font-bold text-slate-900">Enter your reference number</h2>
-            <p className="mb-6 text-sm text-slate-500">Your reference number was provided when you submitted your complaint — it looks like <span className="font-mono font-semibold text-bocra-navy">CMP-2025-XXXXX</span></p>
+            <p className="mb-6 text-sm text-slate-500">Your reference number was provided when you submitted your complaint.</p>
             <TrackForm />
-            <div className="mt-6 flex items-center justify-center gap-4 text-sm text-slate-400">
-              <span>Don't have a reference?</span>
-              <Link to="/complaints" className="font-semibold text-bocra-teal hover:underline flex items-center gap-1">
-                File a new complaint <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
           </motion.div>
         )}
 
         {/* Loading */}
         {ref && isLoading && (
-          <div className="mx-auto max-w-2xl space-y-4">
-            {[80, 200, 160, 120].map((w, i) => (
-              <div key={i} className="card p-6">
-                <div className={`h-4 w-${w} animate-pulse rounded bg-slate-100`} />
-              </div>
-            ))}
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="h-10 w-10 animate-spin text-bocra-teal" />
+            <p className="mt-4 text-slate-500 font-medium">Retrieving complaint details...</p>
           </div>
         )}
 
@@ -104,16 +95,14 @@ export default function ComplaintTrackPage() {
               <XCircle className="h-7 w-7 text-red-500" />
             </div>
             <h2 className="mb-2 font-heading text-xl font-bold text-slate-900">Reference not found</h2>
-            <p className="mb-6 text-sm text-slate-500">
-              No complaint found for <span className="font-mono font-bold text-bocra-navy">{ref}</span>. Please check the number and try again.
-            </p>
+            <p className="mb-6 text-sm text-slate-500">No complaint found for {ref}.</p>
             <TrackForm defaultRef={ref} />
           </motion.div>
         )}
 
         {/* Result */}
         <AnimatePresence>
-          {ref && complaint && (
+          {ref && !isLoading && complaint && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-2xl space-y-5">
 
               {/* Status header card */}
@@ -124,12 +113,13 @@ export default function ComplaintTrackPage() {
                       <p className="font-mono text-sm font-bold text-bocra-teal">{complaint.referenceNumber}</p>
                       <h2 className="mt-1 font-heading text-xl font-bold text-white">{complaint.providerName}</h2>
                       <p className="mt-1 text-sm text-slate-400">
-                        {formatCategory(complaint.category)} · Submitted {formatRelative(complaint.submittedAt)}
+                        {formatCategory(complaint.category)} · 
+                        {complaint.submittedAt ? ` Submitted ${formatRelative(complaint.submittedAt)}` : ' Date unknown'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={complaint.status as ComplaintStatus} />
-                      <button onClick={() => refetch()} className="rounded-lg p-2 text-white/40 hover:bg-white/10 hover:text-white transition-colors" title="Refresh">
+                      <button onClick={() => refetch()} className="rounded-lg p-2 text-white/40 hover:bg-white/10 hover:text-white transition-colors">
                         <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
                       </button>
                     </div>
@@ -161,12 +151,6 @@ export default function ComplaintTrackPage() {
                           <p className={cn('mt-2 text-center text-xs font-semibold leading-tight', active ? 'text-bocra-teal' : done ? 'text-slate-600' : 'text-slate-300')}>
                             {s.label}
                           </p>
-                          {active && (
-                            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                              className="mt-1 text-center text-[10px] text-slate-400 max-w-[80px]">
-                              {s.desc}
-                            </motion.p>
-                          )}
                         </div>
                       )
                     })}
@@ -183,9 +167,9 @@ export default function ComplaintTrackPage() {
                   {[
                     { label: 'Category',    value: formatCategory(complaint.category)  },
                     { label: 'Status',      value: <StatusBadge status={complaint.status as ComplaintStatus} /> },
-                    { label: 'Days open',   value: `${complaint.daysOpen} days`         },
-                    { label: 'Submitted',   value: formatDate(complaint.submittedAt)    },
-                    { label: 'Provider',    value: complaint.providerName               },
+                    { label: 'Days open',   value: `${complaint.daysOpen ?? 0} days` },
+                    { label: 'Submitted',   value: complaint.submittedAt ? formatDate(complaint.submittedAt) : '—' },
+                    { label: 'Provider',    value: complaint.providerName },
                     { label: 'Resolved on', value: complaint.resolvedAt ? formatDate(complaint.resolvedAt) : '—' },
                   ].map(({ label, value }) => (
                     <div key={label} className="bg-white px-5 py-4">
@@ -194,24 +178,15 @@ export default function ComplaintTrackPage() {
                     </div>
                   ))}
                 </dl>
-                {complaint.description && (
-                  <div className="border-t border-slate-100 px-6 py-4">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Description</p>
-                    <p className="text-sm leading-relaxed text-slate-700">{complaint.description}</p>
-                  </div>
-                )}
               </div>
 
               {/* Actions */}
               <div className="grid gap-4 sm:grid-cols-3">
-                <Link to="/complaints" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-card hover:border-bocra-teal hover:text-bocra-teal transition-all">
+                <Link to="/complaints" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-card hover:border-bocra-teal transition-all">
                   <FileText className="h-4 w-4" /> New complaint
                 </Link>
-                <a href="tel:0800600125" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-card hover:border-bocra-teal hover:text-bocra-teal transition-all">
+                <a href="tel:0800600125" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-card hover:border-bocra-teal transition-all">
                   <Phone className="h-4 w-4" /> Call helpline
-                </a>
-                <a href="#" className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-card hover:border-bocra-teal hover:text-bocra-teal transition-all">
-                  <MessageCircle className="h-4 w-4" /> WhatsApp support
                 </a>
               </div>
             </motion.div>

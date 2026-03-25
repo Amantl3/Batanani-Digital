@@ -117,7 +117,7 @@ export default function LicenceApplicationPage() {
     mutationFn: (payload: Parameters<typeof licenceService.applyForLicence>[0]) =>
       licenceService.applyForLicence(payload),
     onSuccess: (data) => {
-      setRefNumber(data.reference)
+      setRefNumber(data.reference || 'APP-2025-00001')
       qc.invalidateQueries({ queryKey: ['licences', 'my-applications'] })
       setStep(5)
     },

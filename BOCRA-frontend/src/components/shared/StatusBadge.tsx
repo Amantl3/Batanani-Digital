@@ -8,6 +8,7 @@ const BADGE: Record<string, string> = {
   expired:'badge-muted', closed:'badge-muted', draft:'badge-muted',
   suspended:'badge-danger', down:'badge-danger', rejected:'badge-danger',
 }
+
 const DOT: Record<string, string> = {
   active:'status-dot-up', operational:'status-dot-up', resolved:'status-dot-up', approved:'status-dot-up',
   pending:'status-dot-maint', in_review:'status-dot-maint', maintenance:'status-dot-maint',
@@ -15,7 +16,23 @@ const DOT: Record<string, string> = {
   down:'status-dot-down', suspended:'status-dot-down', expired:'status-dot-down',
 }
 
-export default function StatusBadge({ status, showDot = true, className }: { status: string; showDot?: boolean; className?: string }) {
+interface StatusBadgeProps {
+  status?: string; // Made optional with ?
+  showDot?: boolean;
+  className?: string;
+}
+
+export default function StatusBadge({ status, showDot = true, className }: StatusBadgeProps) {
+  // If status is undefined or null, render a fallback badge to prevent crashes
+  if (!status) {
+    return (
+      <span className={cn('badge badge-muted', className)}>
+        {showDot && <span className="status-dot" />}
+        Pending
+      </span>
+    )
+  }
+
   return (
     <span className={cn('badge', BADGE[status] ?? 'badge-muted', className)}>
       {showDot && <span className={DOT[status] ?? 'status-dot'} />}

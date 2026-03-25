@@ -1,8 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Search, Download, ExternalLink, Calendar, Tag, BookOpen, ChevronRight, X, FileText, ZoomIn } from 'lucide-react'
+import { Search, Download, ExternalLink, Calendar, Tag, BookOpen, ChevronRight, X, FileText, ZoomIn, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { cn } from '@/utils/cn'
 import api from '@/services/api'
@@ -160,23 +159,34 @@ function PubViewerModal({ pub, onClose }: { pub: Publication; onClose: () => voi
 }
 
 export default function PublicationsPage() {
-  const [search,   setSearch]   = useState('')
-  const [active,   setActive]   = useState<PubCategory>('all')
-  const [viewing,  setViewing]  = useState<Publication | null>(null)
-  const [email,    setEmail]    = useState('')
-  const [subscribing, setSubscribing] = useState(false)
+  const [search,         setSearch]         = useState('')
+  const [active,         setActive]         = useState<PubCategory>('all')
+  const [viewing,        setViewing]        = useState<Publication | null>(null)
+  const [email,          setEmail]          = useState('')
+  const [subscribing,    setSubscribing]    = useState(false)
+  const [publications,   setPublications]   = useState<Publication[]>([])
+  const [loading,        setLoading]        = useState(true)
 
-  // BACKEND: GET /api/v1/publications
-  // When backend is connected, this merges with STATIC_PUBS
-  const { data: apiPubs } = useQuery({
-    queryKey: ['publications'],
-    queryFn:  () => api.get<Publication[]>('/publications').then(r => r.data),
-    placeholderData: [],
-    retry: 1,
-  })
+  // BACKEND: GET /api/v1/documents (legacy endpoint from provided code)
+  // plus fall back to static list
+  useEffect(() => {
+    async function fetchDocs() {
+      setLoading(true)
+      try {
+        const res = await api.get<{ data: Publication[] }>('/documents')
+        const docs = res.data?.data ?? []
+        setPublications(docs)
+      } catch (err) {
+        console.error('Failed to load documents:', err)
+        setPublications([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDocs()
+  }, [])
 
-  // Merge static + API publications
-  const allPubs = [...STATIC_PUBS, ...(apiPubs ?? [])]
+  const allPubs = [...STATIC_PUBS, ...publications]
 
   const filtered = allPubs.filter(p => {
     const matchCat  = active === 'all' || p.category === active
@@ -267,113 +277,104 @@ export default function PublicationsPage() {
         {/* Results info */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            {filtered.length === 0 ? 'No publications found' : `${filtered.length} publication${filtered.length !== 1 ? 's' : ''}`}
-            {search && <> matching "<strong className="text-slate-800">{search}</strong>"</>}
+            {loading ? 'Loading publications…' : filtered.length === 0 ? 'No publications found' : `${filtered.length} publication${filtered.length !== 1 ? 's' : ''}`}
+            {search && !loading && <> matching "<strong className="text-slate-800">{search}</strong>"</>}
           </p>
-          {(search || active !== 'all') && (
+          {(search || active !== 'all') && !loading && (
             <button onClick={() => { setSearch(''); setActive('all') }} className="flex items-center gap-1 text-xs font-medium text-bocra-teal hover:underline">
               <X className="h-3 w-3" /> Clear filters
             </button>
           )}
         </div>
 
-        {/* Empty state */}
-        {filtered.length === 0 && (
-          <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white py-20 text-center shadow-card">
-            <Search className="mb-4 h-10 w-10 text-slate-300" />
-            <p className="font-semibold text-slate-700">No publications found</p>
-            <button onClick={() => { setSearch(''); setActive('all') }} className="mt-4 rounded-lg border border-slate-200 px-5 py-2 text-sm font-medium hover:bg-slate-50">Clear filters</button>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-bocra-teal" />
           </div>
+        ) : (
+          <>
+            {filtered.length === 0 && (
+              <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white py-20 text-center shadow-card">
+                <Search className="mb-4 h-10 w-10 text-slate-300" />
+                <p className="font-semibold text-slate-700">No publications found</p>
+                <button onClick={() => { setSearch(''); setActive('all') }} className="mt-4 rounded-lg border border-slate-200 px-5 py-2 text-sm font-medium hover:bg-slate-50">Clear filters</button>
+              </div>
+            )}
+
+            {/* Featured */}
+            {featured.length > 0 && (
+              <InView className="mb-8">
+                <motion.p variants={fadeUp} className="section-label mb-4">Featured</motion.p>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {featured.map(pub => {
+                    const style = CAT_STYLE[pub.category] ?? { color: 'text-slate-600', bg: 'bg-slate-100' }
+                    return (
+                      <motion.article key={pub.id} variants={fadeUp}
+                        className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-lg">
+                        <div className={cn('h-1.5 w-full', style.bg.replace('/10', '/60'))} />
+                        <div className="p-6">
+                          <div className="mb-3 flex items-center justify-between">
+                            <span className={cn('inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold', style.bg, style.color)}>{pub.category}</span>
+                            <span className="text-xs text-slate-400">{fmtDate(pub.date)}</span>
+                          </div>
+                          <h2 className="mb-2 font-heading text-lg font-bold leading-snug text-slate-900">{pub.title}</h2>
+                          <p className="mb-4 text-sm leading-relaxed text-slate-500">{pub.summary}</p>
+                          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                            <span className="text-xs text-slate-400">{pub.size} · PDF</span>
+                            <div className="flex gap-3">
+                              <a href={pub.url} target="_blank" rel="noreferrer" className="text-xs font-bold text-bocra-teal flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5" /> View</a>
+                              <button onClick={() => handleDownload(pub)} className="text-xs font-bold text-bocra-teal flex items-center gap-1"><Download className="h-3.5 w-3.5" /> Download</button>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.article>
+                    )
+                  })}
+                </div>
+              </InView>
+            )}
+
+            {rest.length > 0 && (
+              <InView>
+                {featured.length > 0 && <motion.p variants={fadeUp} className="section-label mb-4">All publications</motion.p>}
+                <div className="space-y-3">
+                  <AnimatePresence>
+                    {rest.map(pub => {
+                      const style = CAT_STYLE[pub.category] ?? { color: 'text-slate-600', bg: 'bg-slate-100' }
+                      return (
+                        <motion.article key={pub.id} variants={fadeUp} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                          className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-card transition-all hover:border-slate-300 hover:shadow-card-md">
+                          <div className={cn('mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', style.bg)}>
+                            <BookOpen className={cn('h-5 w-5', style.color)} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                              <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-bold', style.bg, style.color)}>{pub.category}</span>
+                              <span className="text-xs text-slate-400">{fmtDate(pub.date)}</span>
+                              <span className="text-xs text-slate-300">·</span>
+                              <span className="text-xs text-slate-400">{pub.size}</span>
+                            </div>
+                            <h3 className="font-heading text-sm font-bold text-slate-900 leading-snug">{pub.title}</h3>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-500 line-clamp-2">{pub.summary}</p>
+                          </div>
+                          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                            <button onClick={() => setViewing(pub)} className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors">
+                              <ZoomIn className="h-3 w-3" /> View
+                            </button>
+                            <button onClick={() => handleDownload(pub)} className={cn('flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white', style.color.replace('/10', ''), 'hover:opacity-90')}>
+                              <Download className="h-3 w-3" /> Save
+                            </button>
+                          </div>
+                        </motion.article>
+                      )
+                    })}
+                  </AnimatePresence>
+                </div>
+              </InView>
+            )}
+          </>
         )}
 
-        {/* Featured */}
-        {featured.length > 0 && (
-          <InView className="mb-8">
-            <motion.p variants={fadeUp} className="section-label mb-4">Featured</motion.p>
-            <div className="grid gap-5 sm:grid-cols-2">
-              {featured.map(pub => {
-                const style = CAT_STYLE[pub.category] ?? { color: 'text-slate-600', bg: 'bg-slate-100' }
-                return (
-                  <motion.article key={pub.id} variants={fadeUp}
-                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-lg">
-                    <div className={cn('h-1.5 w-full', style.bg.replace('/10', '/60'))} />
-                    <div className="p-6">
-                      <div className="mb-3 flex items-center gap-2">
-                        <span className={cn('inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold', style.bg, style.color)}>
-                          <Tag className="h-3 w-3" />{pub.category.charAt(0).toUpperCase() + pub.category.slice(1)}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-slate-400">
-                          <Calendar className="h-3 w-3" />{fmtDate(pub.date)}
-                        </span>
-                      </div>
-                      <h2 className={cn('mb-2 font-heading text-lg font-bold leading-snug text-slate-900 group-hover:transition-colors', `group-hover:${style.color}`)}>
-                        {pub.title}
-                      </h2>
-                      <p className="mb-4 text-sm leading-relaxed text-slate-500">{pub.summary}</p>
-                      <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                        <span className="text-xs text-slate-400">{pub.size} · PDF</span>
-                        <div className="flex gap-3">
-                          <button onClick={() => setViewing(pub)} className={cn('flex items-center gap-1.5 text-xs font-semibold hover:underline', style.color)}>
-                            <ZoomIn className="h-3.5 w-3.5" /> View
-                          </button>
-                          <button onClick={() => handleDownload(pub)} className={cn('flex items-center gap-1.5 text-xs font-semibold hover:underline', style.color)}>
-                            <Download className="h-3.5 w-3.5" /> Download
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.article>
-                )
-              })}
-            </div>
-          </InView>
-        )}
-
-        {/* All others */}
-        {rest.length > 0 && (
-          <InView>
-            {featured.length > 0 && <motion.p variants={fadeUp} className="section-label mb-4">All publications</motion.p>}
-            <div className="space-y-3">
-              <AnimatePresence>
-                {rest.map(pub => {
-                  const style = CAT_STYLE[pub.category] ?? { color: 'text-slate-600', bg: 'bg-slate-100' }
-                  return (
-                    <motion.article key={pub.id} variants={fadeUp} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-card transition-all hover:border-slate-300 hover:shadow-card-md">
-                      <div className={cn('mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', style.bg)}>
-                        <BookOpen className={cn('h-5 w-5', style.color)} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                          <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-bold', style.bg, style.color)}>
-                            {pub.category.charAt(0).toUpperCase() + pub.category.slice(1)}
-                          </span>
-                          <span className="text-xs text-slate-400">{fmtDate(pub.date)}</span>
-                          <span className="text-xs text-slate-300">·</span>
-                          <span className="text-xs text-slate-400">{pub.size}</span>
-                        </div>
-                        <h3 className={cn('font-heading text-sm font-bold text-slate-900 leading-snug', `group-hover:${style.color}`)}>
-                          {pub.title}
-                        </h3>
-                        <p className="mt-1 text-xs leading-relaxed text-slate-500 line-clamp-2">{pub.summary}</p>
-                      </div>
-                      <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-                        <button onClick={() => setViewing(pub)}
-                          className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors">
-                          <ZoomIn className="h-3 w-3" /> View
-                        </button>
-                        <button onClick={() => handleDownload(pub)}
-                          className={cn('flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors', style.bg.replace('/10', '').replace('bg-', 'bg-'), 'hover:opacity-90')}>
-                          <Download className="h-3 w-3" /> Save
-                        </button>
-                      </div>
-                    </motion.article>
-                  )
-                })}
-              </AnimatePresence>
-            </div>
-          </InView>
-        )}
 
         {/* Subscribe CTA */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}

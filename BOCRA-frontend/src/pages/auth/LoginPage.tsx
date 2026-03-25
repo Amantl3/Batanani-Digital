@@ -198,7 +198,9 @@ export default function LoginPage() {
 
             {/* Trust strip */}
             <motion.div variants={fadeUp} className="mt-6 flex items-center justify-center gap-5 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5"><Lock className="h-3 w-3" /> TLS 1.3</span>
+              <Link to="/admin/login" className="flex items-center gap-1.5 font-semibold text-bocra-teal hover:text-bocra-teal/80">
+                <Lock className="h-3 w-3" /> TLS 1.3
+              </Link>
               <span className="h-3 w-px bg-slate-200" />
               <span className="flex items-center gap-1.5"><ShieldCheck className="h-3 w-3" /> DPA compliant</span>
               <span className="h-3 w-px bg-slate-200" />

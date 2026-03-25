@@ -9,14 +9,14 @@ import { cn }         from '@/utils/cn'
 
 // Nav links defined locally so we control labels exactly
 const NAV = [
-  { label: 'Home',         path: '/',            requiresAuth: false },
-  { label: 'Licensing',    path: '/licensing',   requiresAuth: false },
-  { label: 'Complaints',   path: '/complaints',  requiresAuth: false },
-  { label: 'Dashboard',    path: '/dashboard',   requiresAuth: true },
-  { label: 'Publications', path: '/publications',requiresAuth: false },
-  { label: 'My Portal',    path: '/portal',      requiresAuth: true  },
-  { label: 'Analytics Map', path: '/map', requiresAuth: false },
-  { label: 'Contact',      path: '/contact',     requiresAuth: false }
+  { label: 'Home',          path: '/',            requiresAuth: false },
+  { label: 'Licensing',     path: '/licensing',   requiresAuth: false },
+  { label: 'Complaints',    path: '/complaints',  requiresAuth: false },
+  { label: 'Publications',  path: '/publications',requiresAuth: false },
+  { label: 'Dashboard',     path: '/admin/dashboard',   requiresAuth: true, requiresAdmin: true },
+  { label: 'My Portal',     path: '/portal',      requiresAuth: true },
+  { label: 'Analytics Map', path: '/map',         requiresAuth: true, requiresAdmin: true },
+  { label: 'Contact',       path: '/contact',     requiresAuth: false }
 ]
 
 export default function Navbar() {
@@ -27,7 +27,12 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
-  const visibleLinks = NAV.filter(l => !l.requiresAuth || isAuthenticated)
+  const isAdmin = user ? user.role === 'admin' : false
+  const visibleLinks = NAV.filter(l => {
+    if (l.requiresAdmin && !isAdmin) return false
+    if (l.requiresAuth && !isAuthenticated) return false
+    return true
+  })
 
   const initials = user?.fullName
     .split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()

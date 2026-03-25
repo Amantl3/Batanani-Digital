@@ -20,6 +20,7 @@ const LicenceApplicationPage = lazy(() => import('@pages/portal/LicenceApplicati
 const LoginPage              = lazy(() => import('@pages/auth/LoginPage'))
 const RegisterPage           = lazy(() => import('@pages/auth/RegisterPage'))
 const ForgotPasswordPage     = lazy(() => import('@pages/auth/ForgotPasswordPage'))
+const AdminLoginPage        = lazy(() => import('@pages/auth/AdminLoginPage'))
 const NotFoundPage           = lazy(() => import('@pages/NotFoundPage'))
 const DomainRegistrationPage = lazy(() => import('@pages/portal/DomainRegistrationPage'))
 const CompliancePage         = lazy(() => import('@pages/portal/CompliancePage'))
@@ -66,14 +67,14 @@ export default function App() {
             <Route path="/portal/pay" element={<FeesPage/>} />
             <Route path="/portal/renew" element={<RenewalLicencePage/>} />
             <Route path="/portal/type-approval" element={<ApprovalApplicationPage/>} />
-        <Route path="/portal/payment-history" element={<PaymentHistoryPage />} />
-        <Route path="/map" element={<ComplaintsMapPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/sitemap" element={<SitemapPage />} />
+            <Route path="/portal/payment-history" element={<PaymentHistoryPage />} />
+            <Route path="/map" element={<ComplaintsMapPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/sitemap" element={<SitemapPage />} />
 
-              <Route path="/admin/dashboard"     element={<AdminDashboardPage />} />
-              <Route path="/admin/applications" element={<AdminApplicationsPage />} /> 
-              <Route path="/admin/complaints" element={<AdminComplaintsPage />} /> 
+            <Route path="/admin/dashboard"     element={<AdminDashboardPage />} />
+            <Route path="/admin/applications" element={<AdminApplicationsPage />} /> 
+            <Route path="/admin/complaints" element={<AdminComplaintsPage />} /> 
 
 
             {/* ── Auth-protected ────────────────────────── */}
@@ -85,12 +86,16 @@ export default function App() {
             {/* ── Admin-only — dashboard hidden from nav ── */}
             {/* Access via /admin/dashboard — not shown in nav */}
             <Route element={<AdminRoute />}>
+              <Route path="/admin/dashboard"     element={<DashboardPage />} />
+              <Route path="/admin/applications" element={<AdminApplicationsPage />} /> 
+              <Route path="/admin/complaints" element={<AdminComplaintsPage />} />
             </Route>
           </Route>
 
           {/* ── Auth pages ────────────────────────────────── */}
           <Route element={<AuthLayout />}>
             <Route path="/login"           element={<LoginPage />} />
+            <Route path="/admin/login"     element={<AdminLoginPage />} />
             <Route path="/register"        element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>

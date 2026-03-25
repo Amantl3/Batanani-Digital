@@ -235,7 +235,7 @@ export default function AdminComplaintsPage() {
     })
   }
 
-  const complaints = (data?.data ?? MOCK_COMPLAINTS) as unknown as Complaint[]
+  const complaints = (data?.data ?? []) as Complaint[]
   const filtered = complaints.filter(c => {
     const matchStatus = status === 'all' || c.status === status
     const matchSearch = !search || c.providerName.toLowerCase().includes(search.toLowerCase())

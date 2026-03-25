@@ -108,10 +108,24 @@ export default function AdminDashboardPage() {
     },
   })
 
+  const { data: allApps } = useQuery({
+    queryKey: ['admin', 'applications', 'all'],
+    queryFn: () => adminService.getAllApplications({ limit: 1000 }),
+    placeholderData: { data: [], total: 0, totalPages: 0 },
+    staleTime: 1000 * 60 * 2,
+  })
+
+  const { data: allComplaints } = useQuery({
+    queryKey: ['admin', 'complaints', 'all'],
+    queryFn: () => adminService.getAllComplaints({ limit: 1000 }),
+    placeholderData: { data: [], total: 0 },
+    staleTime: 1000 * 60 * 2,
+  })
+
   const kpiCards = [
     { label: 'Total licences',       value: kpis?.activeLicences     ?? 0, delta: kpis?.activeLicencesDelta  ?? 0, icon: FileText,    color: 'bocra-teal'  },
-    { label: 'Active complaints',    value: kpis?.complaintsYTD      ?? 0, delta: kpis?.complaintsYTDDelta   ?? 0, icon: AlertCircle, color: 'bocra-red'   },
-    { label: 'Pending applications', value: kpis?.broadbandPenetration?? 0, delta: kpis?.broadbandDelta      ?? 0, icon: Clock,       color: 'bocra-gold'  },
+    { label: 'Total complaints',     value: allComplaints?.total   ?? kpis?.complaintsYTD ?? 0, delta: kpis?.complaintsYTDDelta ?? 0, icon: AlertCircle, color: 'bocra-red'   },
+    { label: 'Total applications',   value: allApps?.total         ?? (recentApps?.total ?? 0), delta: 0, icon: Clock,      color: 'bocra-gold'  },
     { label: 'Registered users',     value: kpis?.mobileSubscribers  ?? 0, delta: kpis?.mobileSubscribersDelta??0, icon: Users,       color: 'bocra-green' },
   ]
 

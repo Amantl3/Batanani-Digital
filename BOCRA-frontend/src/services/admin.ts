@@ -3,7 +3,7 @@
  * Backend integration: these call /api/v1/admin/* on Railway.
  */
 import api from './api'
-import type { LicenceApplication, Complaint } from '@/types'
+import type { Licence, LicenceApplication, Complaint, PaginatedResponse } from '@/types'
 import type { LicenceFilters } from './licences'
 
 export interface AdminApplicationFilters {
@@ -32,6 +32,12 @@ export interface ComplaintUpdate {
   officerNote: string
 }
 
+export interface LicenceStatusUpdate {
+  status:  'active' | 'suspended' | 'pending' | 'expired' | 'rejected'
+  reason?: string
+  note?:   string
+}
+
 // ── Applications ───────────────────────────────────────────────────────────────
 export const getAllApplications = (filters: AdminApplicationFilters = {}) =>
   api.get<{ data: LicenceApplication[]; total: number; totalPages: number }>(
@@ -40,6 +46,13 @@ export const getAllApplications = (filters: AdminApplicationFilters = {}) =>
 
 export const updateApplication = (ref: string, decision: OfficerDecision) =>
   api.patch<LicenceApplication>(`/admin/applications/${ref}`, decision).then(r => r.data)
+
+// ── Licences ──────────────────────────────────────────────────────────────────────
+export const getAllLicences = (filters: LicenceFilters = {}) =>
+  api.get<PaginatedResponse<Licence>>('/licences', { params: filters }).then(r => r.data)
+
+export const updateLicenceStatus = (licenceId: string, update: LicenceStatusUpdate) =>
+  api.patch<Licence>(`/licences/${licenceId}`, update).then(r => r.data)
 
 // ── Complaints ─────────────────────────────────────────────────────────────────
 export const getAllComplaints = (filters: AdminComplaintFilters = {}) =>
@@ -62,7 +75,7 @@ export const exportComplaints = (format: 'csv' | 'pdf') =>
   }).then(r => r.data)
 
 export const exportLicences = (format: 'csv' | 'pdf', filters: LicenceFilters = {}) =>
-  api.get<Blob>('/admin/licences/export', {
+  api.get<Blob>('/licences/export', {
     params: { format, ...filters },
     responseType: 'blob',
   }).then(r => r.data)

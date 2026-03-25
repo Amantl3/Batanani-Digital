@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import {
-  listLicences, getLicence, applyForLicence,
+  listLicences, getLicenceById, applyForLicence,
   updateStatus, licenceStats, recentLicences,
   pendingLicences, expiringSoonLicences, myApplications,
 } from './controller'

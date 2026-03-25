@@ -47,7 +47,7 @@ model ChatMessage {
 
 model Document {
   id          String   @id @default(uuid())
-  title       String
+ title       String   @unique
   category    String
   summary     String
   fileUrl     String

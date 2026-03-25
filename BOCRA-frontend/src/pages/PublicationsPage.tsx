@@ -1,29 +1,26 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react' // Added useEffect
 import { Link } from 'react-router-dom'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Search, Download, ExternalLink, Calendar, Tag, BookOpen, ChevronRight, X, FileText, ZoomIn, Loader2 } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { Search, Download, ExternalLink, Calendar, Tag, BookOpen, ChevronRight, Filter, X } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import api from '@/services/api'
 
 type PubCategory = 'all' | 'consultation' | 'regulation' | 'report' | 'gazette' | 'advisory'
 
 interface Publication {
-  id: string; title: string; category: string
-  date: string; size: string; summary: string
-  url: string; featured?: boolean; fileType?: 'pdf' | 'doc' | 'external'
+  id: string; title: string; category: Omit<PubCategory, 'all'>
+  date: string; size: string; summary: string; url: string; featured?: boolean
 }
 
-// Static publications — also fetched from backend where available
-const STATIC_PUBS: Publication[] = [
-  { id:'1', title:'Draft Cybersecurity Policy for Electronic Communications Networks',   category:'consultation', date:'2025-03-18', size:'1.2 MB', featured:true, fileType:'pdf', url:'#', summary:'BOCRA invites public comment on the draft cybersecurity policy framework for electronic communications network operators in Botswana.' },
-  { id:'2', title:'Q4 2024 Market Monitoring and Competition Report',                   category:'report',       date:'2025-02-28', size:'3.4 MB', featured:true, fileType:'pdf', url:'#', summary:'Quarterly analysis of market trends, subscriber statistics, and competition indicators across all communications sectors.' },
-  { id:'3', title:'Telecommunications (Amendment) Regulations 2025 — Draft',           category:'consultation', date:'2025-02-14', size:'890 KB', fileType:'pdf', url:'#', summary:'Proposed amendments to the existing telecommunications regulations to address emerging digital services and OTT providers.' },
-  { id:'4', title:'Revised Type Approval Guidelines for Mobile Devices',                category:'regulation',   date:'2025-03-12', size:'560 KB', fileType:'pdf', url:'#', summary:'Updated technical requirements and submission procedures for type approval of mobile handsets and accessories.' },
-  { id:'5', title:'Government Gazette — BOCRA Licence Fee Schedule 2025/26',           category:'gazette',      date:'2025-01-06', size:'440 KB', fileType:'pdf', url:'#', summary:'Official gazette notice setting out the annual licence fees for all categories of communications licences.' },
-  { id:'6', title:'CSIRT Advisory: Phishing Campaign Targeting Mobile Banking Users',   category:'advisory',     date:'2025-03-05', size:'210 KB', fileType:'pdf', url:'#', summary:'Security alert regarding active phishing campaigns impersonating major Botswana banks via SMS and WhatsApp.' },
-  { id:'7', title:'Annual Report 2023/24',                                              category:'report',       date:'2024-12-15', size:'8.7 MB', fileType:'pdf', url:'#', summary:"BOCRA's comprehensive annual report covering regulatory activities, financial statements, and strategic priorities." },
-  { id:'8', title:'Broadband Strategy for Botswana 2025–2030',                         category:'regulation',   date:'2024-11-20', size:'2.1 MB', fileType:'pdf', url:'#', summary:'National strategy document outlining targets for broadband penetration, infrastructure investment, and digital inclusion.' },
+const PUBS: Publication[] = [
+  { id:'1', title:'Draft Cybersecurity Policy for Electronic Communications Networks', category:'consultation', date:'2025-03-18', size:'1.2 MB', featured:true, url:'#', summary:'BOCRA invites public comment on the draft cybersecurity policy framework for electronic communications network operators in Botswana.' },
+  { id:'2', title:'Q4 2024 Market Monitoring and Competition Report',                  category:'report',       date:'2025-02-28', size:'3.4 MB', featured:true, url:'#', summary:'Quarterly analysis of market trends, subscriber statistics, and competition indicators across all communications sectors.' },
+  { id:'3', title:'Telecommunications (Amendment) Regulations 2025 — Draft',         category:'consultation', date:'2025-02-14', size:'890 KB', url:'#', summary:'Proposed amendments to the existing telecommunications regulations to address emerging digital services and OTT providers.' },
+  { id:'4', title:'Revised Type Approval Guidelines for Mobile Devices',              category:'regulation',   date:'2025-03-12', size:'560 KB', url:'#', summary:'Updated technical requirements and submission procedures for type approval of mobile handsets and accessories.' },
+  { id:'5', title:'Government Gazette — BOCRA Licence Fee Schedule 2025/26',         category:'gazette',      date:'2025-01-06', size:'440 KB', url:'#', summary:'Official gazette notice setting out the annual licence fees for all categories of communications licences.' },
+  { id:'6', title:'CSIRT Advisory: Phishing Campaign Targeting Mobile Banking Users', category:'advisory',     date:'2025-03-05', size:'210 KB', url:'#', summary:'Security alert regarding active phishing campaigns impersonating major Botswana banks via SMS and WhatsApp.' },
+  { id:'7', title:'Annual Report 2023/24',                                            category:'report',       date:'2024-12-15', size:'8.7 MB', url:'#', summary:"BOCRA's comprehensive annual report covering regulatory activities, financial statements, and strategic priorities." },
+  { id:'8', title:'Broadband Strategy for Botswana 2025–2030',                       category:'regulation',   date:'2024-11-20', size:'2.1 MB', url:'#', summary:'National strategy document outlining targets for broadband penetration, infrastructure investment, and digital inclusion.' },
 ]
 
 const CATEGORIES: { value: PubCategory; label: string; color: string; bg: string }[] = [
@@ -159,70 +156,19 @@ function PubViewerModal({ pub, onClose }: { pub: Publication; onClose: () => voi
 }
 
 export default function PublicationsPage() {
-  const [search,         setSearch]         = useState('')
-  const [active,         setActive]         = useState<PubCategory>('all')
-  const [viewing,        setViewing]        = useState<Publication | null>(null)
-  const [email,          setEmail]          = useState('')
-  const [subscribing,    setSubscribing]    = useState(false)
-  const [publications,   setPublications]   = useState<Publication[]>([])
-  const [loading,        setLoading]        = useState(true)
+  const [search, setSearch] = useState('')
+  const [active, setActive] = useState<PubCategory>('all')
 
-  // BACKEND: GET /api/v1/documents (legacy endpoint from provided code)
-  // plus fall back to static list
-  useEffect(() => {
-    async function fetchDocs() {
-      setLoading(true)
-      try {
-        const res = await api.get<{ data: Publication[] }>('/documents')
-        const docs = res.data?.data ?? []
-        setPublications(docs)
-      } catch (err) {
-        console.error('Failed to load documents:', err)
-        setPublications([])
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchDocs()
-  }, [])
-
-  const allPubs = [...STATIC_PUBS, ...publications]
-
-  const filtered = allPubs.filter(p => {
+  const filtered = PUBS.filter(p => {
     const matchCat  = active === 'all' || p.category === active
     const matchText = !search || p.title.toLowerCase().includes(search.toLowerCase()) || p.summary.toLowerCase().includes(search.toLowerCase())
     return matchCat && matchText
   })
 
   const featured = filtered.filter(p => p.featured)
-  const rest     = filtered.filter(p => !p.featured)
-  const fmtDate  = (d: string) => new Date(d).toLocaleDateString('en-BW', { day:'numeric', month:'short', year:'numeric' })
+  const rest      = filtered.filter(p => !p.featured)
 
-  const handleDownload = (pub: Publication) => {
-    if (pub.url && pub.url !== '#') {
-      const a = Object.assign(document.createElement('a'), { href: pub.url, download: `${pub.title}.pdf`, target: '_blank' })
-      document.body.appendChild(a); a.click(); document.body.removeChild(a)
-    } else {
-      // Download info sheet for demo publications
-      const txt = `${pub.title}\n\nPublished: ${fmtDate(pub.date)}\nCategory: ${pub.category}\n\n${pub.summary}\n\nSource: BOCRA — www.bocra.org.bw`
-      const blob = new Blob([txt], { type: 'text/plain' })
-      const url  = URL.createObjectURL(blob)
-      const a    = Object.assign(document.createElement('a'), { href: url, download: `${pub.title.slice(0,50)}.txt` })
-      document.body.appendChild(a); a.click()
-      document.body.removeChild(a); URL.revokeObjectURL(url)
-      toast.success('Info sheet downloaded')
-    }
-  }
-
-  const handleSubscribe = async () => {
-    if (!email || !email.includes('@')) { toast.error('Enter a valid email'); return }
-    setSubscribing(true)
-    // BACKEND: POST /api/v1/publications/subscribe  { email }
-    await new Promise(r => setTimeout(r, 800))
-    toast.success(`Subscribed! We'll notify ${email} of new publications.`)
-    setEmail('')
-    setSubscribing(false)
-  }
+  const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-BW', { day:'numeric', month:'short', year:'numeric' })
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -242,9 +188,10 @@ export default function PublicationsPage() {
                 <span className="text-xs font-semibold text-bocra-gold">Regulatory documents</span>
               </div>
               <h1 className="font-heading text-4xl font-bold text-white">Publications</h1>
-              <p className="mt-2 max-w-lg text-slate-400">Reports, regulatory notices, gazettes, consultations, and security advisories. All documents are freely available.</p>
+              <p className="mt-2 max-w-lg text-slate-400">Reports, regulatory notices, gazettes, public consultations, and CSIRT security advisories.</p>
             </div>
           </div>
+
           {/* Search */}
           <div className="mt-8 flex max-w-xl overflow-hidden rounded-xl bg-white shadow-card-lg">
             <div className="flex flex-1 items-center gap-3 px-5">
@@ -252,7 +199,11 @@ export default function PublicationsPage() {
               <input type="search" value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Search publications, regulations, reports…"
                 className="flex-1 border-none bg-transparent py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none" />
-              {search && <button onClick={() => setSearch('')} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>}
+              {search && (
+                <button onClick={() => setSearch('')} className="text-slate-400 hover:text-slate-600">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -261,14 +212,21 @@ export default function PublicationsPage() {
       <div className="container-page py-8">
         {/* Category filters */}
         <div className="mb-8 flex flex-wrap items-center gap-2">
+          <Filter className="h-4 w-4 text-slate-400" />
           {CATEGORIES.map(c => {
-            const count = c.value === 'all' ? allPubs.length : allPubs.filter(p => p.category === c.value).length
+            const count = c.value === 'all' ? PUBS.length : PUBS.filter(p => p.category === c.value).length
             return (
               <button key={c.value} onClick={() => setActive(c.value)}
-                className={cn('flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all',
-                  active === c.value ? `${c.bg} ${c.color} ring-2 ring-current ring-offset-1` : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300')}>
+                className={cn(
+                  'flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold transition-all',
+                  active === c.value
+                    ? `${c.bg} ${c.color} ring-2 ring-current ring-offset-1`
+                    : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                )}>
                 {c.label}
-                <span className={cn('rounded-full px-1.5 py-0.5 text-xs', active === c.value ? 'bg-white/40' : 'bg-slate-100')}>{count}</span>
+                <span className={cn('rounded-full px-1.5 py-0.5 text-xs', active === c.value ? 'bg-white/40' : 'bg-slate-100')}>
+                  {count}
+                </span>
               </button>
             )
           })}
@@ -277,104 +235,115 @@ export default function PublicationsPage() {
         {/* Results info */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            {loading ? 'Loading publications…' : filtered.length === 0 ? 'No publications found' : `${filtered.length} publication${filtered.length !== 1 ? 's' : ''}`}
-            {search && !loading && <> matching "<strong className="text-slate-800">{search}</strong>"</>}
+            {filtered.length === 0 ? 'No publications found' : `${filtered.length} publication${filtered.length !== 1 ? 's' : ''}`}
+            {search && <> matching "<strong className="text-slate-800">{search}</strong>"</>}
           </p>
-          {(search || active !== 'all') && !loading && (
-            <button onClick={() => { setSearch(''); setActive('all') }} className="flex items-center gap-1 text-xs font-medium text-bocra-teal hover:underline">
+          {(search || active !== 'all') && (
+            <button onClick={() => { setSearch(''); setActive('all') }}
+              className="flex items-center gap-1 text-xs font-medium text-bocra-teal hover:underline">
               <X className="h-3 w-3" /> Clear filters
             </button>
-          )}
+          ))}
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-bocra-teal" />
+        {/* Empty state */}
+        {filtered.length === 0 && (
+          <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white py-20 text-center shadow-card">
+            <Search className="mb-4 h-10 w-10 text-slate-300" />
+            <p className="font-semibold text-slate-700">No publications found</p>
+            <button onClick={() => { setSearch(''); setActive('all') }}
+              className="mt-4 rounded-lg border border-slate-200 px-5 py-2 text-sm font-medium hover:bg-slate-50">Clear filters</button>
           </div>
-        ) : (
-          <>
-            {filtered.length === 0 && (
-              <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white py-20 text-center shadow-card">
-                <Search className="mb-4 h-10 w-10 text-slate-300" />
-                <p className="font-semibold text-slate-700">No publications found</p>
-                <button onClick={() => { setSearch(''); setActive('all') }} className="mt-4 rounded-lg border border-slate-200 px-5 py-2 text-sm font-medium hover:bg-slate-50">Clear filters</button>
-              </div>
-            )}
-
-            {/* Featured */}
-            {featured.length > 0 && (
-              <InView className="mb-8">
-                <motion.p variants={fadeUp} className="section-label mb-4">Featured</motion.p>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  {featured.map(pub => {
-                    const style = CAT_STYLE[pub.category] ?? { color: 'text-slate-600', bg: 'bg-slate-100' }
-                    return (
-                      <motion.article key={pub.id} variants={fadeUp}
-                        className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-lg">
-                        <div className={cn('h-1.5 w-full', style.bg.replace('/10', '/60'))} />
-                        <div className="p-6">
-                          <div className="mb-3 flex items-center justify-between">
-                            <span className={cn('inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold', style.bg, style.color)}>{pub.category}</span>
-                            <span className="text-xs text-slate-400">{fmtDate(pub.date)}</span>
-                          </div>
-                          <h2 className="mb-2 font-heading text-lg font-bold leading-snug text-slate-900">{pub.title}</h2>
-                          <p className="mb-4 text-sm leading-relaxed text-slate-500">{pub.summary}</p>
-                          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                            <span className="text-xs text-slate-400">{pub.size} · PDF</span>
-                            <div className="flex gap-3">
-                              <a href={pub.url} target="_blank" rel="noreferrer" className="text-xs font-bold text-bocra-teal flex items-center gap-1"><ExternalLink className="h-3.5 w-3.5" /> View</a>
-                              <button onClick={() => handleDownload(pub)} className="text-xs font-bold text-bocra-teal flex items-center gap-1"><Download className="h-3.5 w-3.5" /> Download</button>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.article>
-                    )
-                  })}
-                </div>
-              </InView>
-            )}
-
-            {rest.length > 0 && (
-              <InView>
-                {featured.length > 0 && <motion.p variants={fadeUp} className="section-label mb-4">All publications</motion.p>}
-                <div className="space-y-3">
-                  <AnimatePresence>
-                    {rest.map(pub => {
-                      const style = CAT_STYLE[pub.category] ?? { color: 'text-slate-600', bg: 'bg-slate-100' }
-                      return (
-                        <motion.article key={pub.id} variants={fadeUp} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                          className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-card transition-all hover:border-slate-300 hover:shadow-card-md">
-                          <div className={cn('mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', style.bg)}>
-                            <BookOpen className={cn('h-5 w-5', style.color)} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                              <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-bold', style.bg, style.color)}>{pub.category}</span>
-                              <span className="text-xs text-slate-400">{fmtDate(pub.date)}</span>
-                              <span className="text-xs text-slate-300">·</span>
-                              <span className="text-xs text-slate-400">{pub.size}</span>
-                            </div>
-                            <h3 className="font-heading text-sm font-bold text-slate-900 leading-snug">{pub.title}</h3>
-                            <p className="mt-1 text-xs leading-relaxed text-slate-500 line-clamp-2">{pub.summary}</p>
-                          </div>
-                          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-                            <button onClick={() => setViewing(pub)} className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors">
-                              <ZoomIn className="h-3 w-3" /> View
-                            </button>
-                            <button onClick={() => handleDownload(pub)} className={cn('flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white', style.color.replace('/10', ''), 'hover:opacity-90')}>
-                              <Download className="h-3 w-3" /> Save
-                            </button>
-                          </div>
-                        </motion.article>
-                      )
-                    })}
-                  </AnimatePresence>
-                </div>
-              </InView>
-            )}
-          </>
         )}
 
+        {/* Featured publications */}
+        {featured.length > 0 && (
+          <InView className="mb-8">
+            <motion.p variants={fadeUp} className="section-label mb-4">Featured</motion.p>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {featured.map(pub => {
+                const style = CAT_STYLE[pub.category as string] ?? { color: 'text-slate-600', bg: 'bg-slate-100' }
+                return (
+                  <motion.article key={pub.id} variants={fadeUp}
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card transition-all hover:-translate-y-1 hover:shadow-card-lg">
+                    <div className={`h-1.5 w-full ${style.bg.replace('/10', '')}`} />
+                    <div className="p-6">
+                      <div className="mb-3 flex items-center gap-2">
+                        <span className={cn('inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold', style.bg, style.color)}>
+                          <Tag className="h-3 w-3" />
+                          {pub.category.charAt(0).toUpperCase() + pub.category.slice(1)}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-slate-400">
+                          <Calendar className="h-3 w-3" /> {fmtDate(pub.date)}
+                        </span>
+                      </div>
+                      <h2 className={cn('mb-2 font-heading text-lg font-bold leading-snug text-slate-900', `group-hover:${style.color}`)}>
+                        <a href={pub.url}>{pub.title}</a>
+                      </h2>
+                      <p className="mb-4 text-sm leading-relaxed text-slate-500">{pub.summary}</p>
+                      <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                        <span className="text-xs text-slate-400">{pub.size}</span>
+                        <div className="flex gap-3">
+                          <a href={pub.url} className={cn('flex items-center gap-1.5 text-xs font-semibold hover:underline', style.color)}>
+                            <ExternalLink className="h-3.5 w-3.5" /> View
+                          </a>
+                          <a href={pub.url} download className={cn('flex items-center gap-1.5 text-xs font-semibold hover:underline', style.color)}>
+                            <Download className="h-3.5 w-3.5" /> Download
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.article>
+                )
+              })}
+            </div>
+          </InView>
+        )}
+
+        {/* All other publications */}
+        {rest.length > 0 && (
+          <InView>
+            {featured.length > 0 && <motion.p variants={fadeUp} className="section-label mb-4">All publications</motion.p>}
+            <div className="space-y-3">
+              <AnimatePresence>
+                {rest.map(pub => {
+                  const style = CAT_STYLE[pub.category as string] ?? { color: 'text-slate-600', bg: 'bg-slate-100' }
+                  return (
+                    <motion.article key={pub.id} variants={fadeUp}
+                      layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="group flex items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-card transition-all hover:border-slate-300 hover:shadow-card-md">
+                      <div className={cn('mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', style.bg)}>
+                        <BookOpen className={cn('h-5 w-5', style.color)} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                          <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-bold', style.bg, style.color)}>
+                            {pub.category.charAt(0).toUpperCase() + pub.category.slice(1)}
+                          </span>
+                          <span className="text-xs text-slate-400">{fmtDate(pub.date)}</span>
+                          <span className="text-xs text-slate-300">·</span>
+                          <span className="text-xs text-slate-400">{pub.size}</span>
+                        </div>
+                        <h3 className={cn('font-heading text-sm font-bold text-slate-900 leading-snug', `group-hover:${style.color}`)}>
+                          <a href={pub.url}>{pub.title}</a>
+                        </h3>
+                        <p className="mt-1 text-xs leading-relaxed text-slate-500 line-clamp-2">{pub.summary}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                        <a href={pub.url} className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors">
+                          <ExternalLink className="h-3 w-3" /> View
+                        </a>
+                        <a href={pub.url} download className={cn('flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors', style.bg.replace('/10', '').replace('bg-', 'bg-'), `hover:opacity-90`)}>
+                          <Download className="h-3 w-3" /> Save
+                        </a>
+                      </div>
+                    </motion.article>
+                  )
+                })}
+              </AnimatePresence>
+            </div>
+          </InView>
+        )}
 
         {/* Subscribe CTA */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -385,14 +354,10 @@ export default function PublicationsPage() {
               <p className="mt-1 text-sm text-slate-400">Get notified when new publications and consultations are released.</p>
             </div>
             <div className="flex gap-3">
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSubscribe()}
-                placeholder="your@email.com"
+              <input type="email" placeholder="your@email.com"
                 className="rounded-xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-bocra-teal focus:outline-none" />
-              <button onClick={handleSubscribe} disabled={subscribing}
-                className="flex items-center gap-2 rounded-xl bg-bocra-teal px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 transition-colors disabled:opacity-60">
-                {subscribing ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : <ChevronRight className="h-4 w-4" />}
-                Subscribe
+              <button className="flex items-center gap-2 rounded-xl bg-bocra-teal px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 transition-colors">
+                Subscribe <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </div>

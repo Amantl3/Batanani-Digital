@@ -74,18 +74,31 @@ export const getLicence = async (req: Request, res: Response) => {
   }
 }
 
-// ── POST /api/licences ────────────────────────────────────────────────────────
+// ── POST /api/licences  (also aliased at POST /api/licences/apply) ────────────
 export const applyForLicence = async (req: Request, res: Response) => {
   try {
-    const { type, companyName, userId } = req.body
-    if (!type || !companyName || !userId) {
+    // Accept both 'category' (frontend field name) and 'type' (DB field name)
+    const { type, category, companyName } = req.body
+    const licenceType = type || category
+
+    // userId comes from the JWT via the protect middleware – never trust req.body for this
+    const userId = (req as any).user?.id
+
+    if (!licenceType || !companyName) {
       return res.status(400).json({
         success: false,
-        error: 'type, companyName and userId are required',
+        error: 'type/category and companyName are required',
       })
     }
-    const data = await createLicence({ type, companyName, userId })
-    res.status(201).json({ success: true, data: mapLicence(data) })
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Not authenticated' })
+    }
+
+    const data = await createLicence({ type: licenceType, companyName, userId })
+    const mapped = mapLicence(data)
+
+    // Return 'reference' at the top level so the frontend onSuccess handler can read data.reference
+    res.status(201).json({ success: true, data: mapped, reference: mapped.id })
   } catch (error: any) {
     console.error('[applyForLicence]', error.message)
     res.status(500).json({ success: false, error: error.message })

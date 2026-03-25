@@ -1,54 +1,31 @@
-/**
- * src/modules/licences/routes.ts
- */
 import { Router } from 'express'
 import {
   listLicences,
-  getLicence,
+  getLicenceById,
   applyForLicence,
   updateStatus,
-  removeLicence,
   licenceStats,
-  licencesByType,
   recentLicences,
   pendingLicences,
   expiringSoonLicences,
-  licencesThisMonth,
-  verifyLicencePublic,
-  licenceRenewals,
-  licenceHistory,
-  licencesByUser,
-  mostCommonLicenceTypes,
-  suspendedLicences,
+  myApplications,
 } from './controller'
 import { protect } from '../../middleware/auth'
 
 const router = Router()
 
-// ── Named/aggregate routes — must come BEFORE /:id routes ────────────────────
-router.get('/stats',         licenceStats)
-router.get('/by-type',       licencesByType)
-router.get('/recent',        recentLicences)
-router.get('/pending',       pendingLicences)
-router.get('/expiring-soon', expiringSoonLicences)
-router.get('/this-month',    licencesThisMonth)
-router.get('/renewals',      licenceRenewals)
-router.get('/common-types',  mostCommonLicenceTypes)
-router.get('/suspended',     suspendedLicences)
+// Static routes MUST come before /:id
+router.get('/stats',            licenceStats)
+router.get('/recent',           recentLicences)
+router.get('/my-applications',  protect, myApplications)
+router.get('/pending',          protect, pendingLicences)
+router.get('/expiring-soon',    protect, expiringSoonLicences)
 
-// ── User-specific — protected ─────────────────────────────────────────────────
-router.get('/user/:userId', protect, licencesByUser)
+router.post('/',                protect, applyForLicence)
+router.post('/apply',           protect, applyForLicence)
 
-// ── Main CRUD ─────────────────────────────────────────────────────────────────
-router.get('/',    listLicences)             // public
-router.post('/',   protect, applyForLicence) // protected
-router.get('/:id', getLicence)               // public
-
-router.patch ('/:id/status', protect, updateStatus)
-router.delete('/:id',        protect, removeLicence)
-
-// ── Per-licence extras ────────────────────────────────────────────────────────
-router.get('/:id/verify',  verifyLicencePublic)
-router.get('/:id/history', licenceHistory)
+router.get('/',                 listLicences)
+router.get('/:id',              getLicenceById)
+router.patch('/:id/status',     protect, updateStatus)
 
 export default router

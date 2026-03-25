@@ -8,18 +8,20 @@ import express from 'express'
 import cors    from 'cors'
 import helmet  from 'helmet'
 import rateLimit from 'express-rate-limit'
-import { supabase }        from './config/supabase'
-import dashboardRoutes     from './modules/dashboard/routes'
+import { supabase }         from './config/supabase'
+
+// ── Imports ──────────────────────────────────────────────────────────────────
+import dashboardRoutes      from './modules/dashboard/routes'
 import licenceRoutes       from './modules/licences/routes'
 import complaintRoutes     from './modules/complaints/routes'
 import authRoutes          from './modules/auth/routes'
 import chatRoutes          from './modules/chat/routes'
+import documentRoutes      from './modules/documents/routes' // Added this
 
 const app  = express()
 const PORT = process.env.PORT || 3001
 
 // ── Allowed origins ───────────────────────────────────────────────────────────
-// Add your deployed frontend URL here if it differs from the backend URL
 const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -27,13 +29,11 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3003',
   'http://localhost:5173',
   'https://batanani-digital-production.up.railway.app',
-  // If your FRONTEND is deployed at a different Railway URL, add it here:
-  // 'https://YOUR-FRONTEND-APP.up.railway.app',
 ]
 
 app.use(helmet({ crossOriginResourcePolicy: false }))
 
-// Manual CORS header middleware (handles preflight)
+// Manual CORS header middleware
 app.use((req, res, next) => {
   const origin = req.headers.origin
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
@@ -63,11 +63,12 @@ app.get('/api/test-supabase', async (_req, res) => {
 })
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-app.use('/api/auth',       authRoutes)
-app.use('/api/complaints', complaintRoutes)
-app.use('/api/licences',   licenceRoutes)
-app.use('/api/dashboard',  dashboardRoutes)
-app.use('/api/chat',       chatRoutes)
+app.use('/api/auth',        authRoutes)
+app.use('/api/complaints',  complaintRoutes)
+app.use('/api/licences',    licenceRoutes)
+app.use('/api/dashboard',   dashboardRoutes)
+app.use('/api/chat',        chatRoutes)
+app.use('/api/documents',   documentRoutes) // Added this
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {

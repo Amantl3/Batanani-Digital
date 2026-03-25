@@ -26,6 +26,12 @@ const CompliancePage         = lazy(() => import('@pages/portal/CompliancePage')
 const FeesPage                = lazy(() => import('@pages/portal/FeesPage'))
 const RenewalLicencePage        = lazy(() => import('@/pages/portal/RenewalLicencePage'))
 const ApprovalApplicationPage = lazy(() => import('@pages/portal/ApprovalApplicationPage'))
+const PaymentHistoryPage      = lazy(() => import('@pages/portal/PaymentHistoryPage'))
+const ComplaintsMapPage = lazy(() => import('@pages/ComplaintsMapPage'));
+const ContactPage       = lazy(() => import('@pages/ContactPage'));
+const SitemapPage       = lazy(() => import('@pages/SitemapPage'))
+
+
 const AdminApplicationsPage = lazy(() => import('@pages/admin/AdminApplicationsPage'))
 const AdminComplaintsPage = lazy(() => import('@pages/admin/AdminComplaintsPage'))
 const AdminDashboardPage = lazy(() => import('@pages/admin/AdminDashboardPage'))
@@ -60,6 +66,10 @@ export default function App() {
             <Route path="/portal/pay" element={<FeesPage/>} />
             <Route path="/portal/renew" element={<RenewalLicencePage/>} />
             <Route path="/portal/type-approval" element={<ApprovalApplicationPage/>} />
+        <Route path="/portal/payment-history" element={<PaymentHistoryPage />} />
+        <Route path="/map" element={<ComplaintsMapPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/sitemap" element={<SitemapPage />} />
 
               <Route path="/admin/dashboard"     element={<AdminDashboardPage />} />
               <Route path="/admin/applications" element={<AdminApplicationsPage />} /> 

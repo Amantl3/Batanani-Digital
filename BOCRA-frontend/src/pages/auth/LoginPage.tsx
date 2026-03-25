@@ -40,8 +40,12 @@ export default function LoginPage() {
 
   const onSubmit = (data: FormData) => {
     login(data, {
-      onError: (err: { status?: number }) => {
-        if (err?.status === 403) setShowMFA(true)
+     onError: (err: { detail?: string }) => {
+        if (err?.detail === 'Invalid credentials') {
+          // Handle invalid credentials
+        } else if (err?.detail === 'MFA required') {
+          setShowMFA(true)
+        }
       },
     })
   }

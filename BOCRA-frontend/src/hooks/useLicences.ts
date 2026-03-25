@@ -1,15 +1,22 @@
+/**
+ * src/hooks/useLicences.ts
+ */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 
 import * as licenceService from '@/services/licences'
-import type { LicenceFilters, ApplyPayload } from '@/services/licences'
+import type { ApplyPayload } from '@/services/licences'
+
+interface LicenceFilters {
+  [key: string]: unknown
+}
 
 export function useLicences(filters: LicenceFilters = {}) {
   return useQuery({
-    queryKey:       ['licences', filters],
-    queryFn:        () => licenceService.getLicences(filters),
-    staleTime:      1000 * 60 * 5,
-    placeholderData: (prev) => prev,
+    queryKey:        ['licences', filters],
+    queryFn:         () => licenceService.getLicences(filters),
+    staleTime:       1000 * 60 * 5,
+    placeholderData: (prev: any) => prev,
   })
 }
 

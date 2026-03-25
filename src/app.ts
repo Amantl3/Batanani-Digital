@@ -1,6 +1,6 @@
 /**
  * src/app.ts
- * BOCRA Help Chat - Integrated Search & Complaint Tracking
+ * BOCRA Help Chat - Final Hackathon Version
  */
 import dotenv from 'dotenv'
 dotenv.config()
@@ -34,13 +34,12 @@ app.post('/api/whatsapp', express.urlencoded({ extended: false }), async (req, r
   const lowerMsg = incomingMsg.toLowerCase();
 
   try {
-    // 1. AUTO-GREETING ON JOIN (Hackathon optimization)
-    // This catches the 'join word' message and immediately shows the menu
+    // 1. GREETING & AUTO-JOIN LOGIC
     if (lowerMsg.includes('join') || ['hi', 'hello', 'help', 'menu', 'bocra'].includes(lowerMsg)) {
       const welcome = 
         `🇧🇼 *BOCRA Help Chat* 🇧🇼\n` +
         `_________________________\n\n` +
-        `Welcome to the BOCRA Digital Assistant. We are now connected!\n\n` +
+        `Welcome to the official digital assistant. How can we help you?\n\n` +
         `👉 *Search [Name]* - Verify a License\n` +
         `👉 *Status [Ref]* - Track a Complaint\n` +
         `👉 *Apply* - Licensing requirements\n` +
@@ -49,9 +48,11 @@ app.post('/api/whatsapp', express.urlencoded({ extended: false }), async (req, r
       twiml.message(welcome);
     }
 
-    // 2. LICENSE SEARCH (Using your Licence table)
+    // 2. SEARCH LOGIC (Case-Insensitive & Partial Match)
     else if (lowerMsg.startsWith('search')) {
       const query = incomingMsg.replace(/search/i, '').trim();
+      
+      // Using .ilike for better search results during the demo
       const { data, error } = await supabase
         .from('Licence') 
         .select('*')
@@ -59,19 +60,21 @@ app.post('/api/whatsapp', express.urlencoded({ extended: false }), async (req, r
         .limit(1);
 
       if (error || !data || data.length === 0) {
-        twiml.message(`🔍 *Search Result:*\nNo records found for "${query}".`);
+        twiml.message(`🔍 *Search Result:*\nNo records found for "${query}". Please check the spelling.`);
       } else {
         const lic = data[0];
         twiml.message(
           `✅ *BOCRA Verified License*\n` +
+          `_________________________\n` +
           `🏢 *Entity:* ${lic.company_name}\n` +
           `🔢 *Ref:* ${lic.license_number}\n` +
-          `🚦 *Status:* ${lic.status || 'Active'}`
+          `🚦 *Status:* ${lic.status || 'Active'}\n` +
+          `📅 *Type:* ${lic.license_type || 'Communications'}`
         );
       }
     }
 
-    // 3. COMPLAINT STATUS (Using your Complaint table)
+    // 3. COMPLAINT STATUS
     else if (lowerMsg.startsWith('status')) {
       const ref = incomingMsg.replace(/status/i, '').trim();
       const { data, error } = await supabase
@@ -81,36 +84,37 @@ app.post('/api/whatsapp', express.urlencoded({ extended: false }), async (req, r
         .single();
 
       if (error || !data) {
-        twiml.message(`❌ *No Record*\nCould not find a complaint with Reference: *${ref}*`);
+        twiml.message(`❌ *Status Update*\nCould not find a complaint with Ref: *${ref}*`);
       } else {
         twiml.message(
-          `📂 *Complaint Record: ${ref}*\n` +
+          `📂 *Case Record: ${ref}*\n` +
           `🚦 *Status:* ${data.status.toUpperCase()}\n` +
-          `📅 *Update:* ${new Date(data.updated_at).toLocaleDateString()}`
+          `📅 *Updated:* ${new Date(data.updated_at).toLocaleDateString()}`
         );
       }
     }
 
-    // 4. OTHER FAQS
+    // 4. GENERAL INFO
     else if (lowerMsg === 'apply') {
-      twiml.message(`📝 *Apply:* Visit https://bocra.org.bw/licensing for forms.`);
+      twiml.message(`📝 *Licensing:* Visit https://bocra.org.bw/licensing for online forms.`);
     } else if (lowerMsg === 'office') {
-      twiml.message(`📍 *Office:* Independence Avenue, Gaborone. Tel: +267 368 5400`);
+      twiml.message(`📍 *BOCRA HQ:* Independence Avenue, Gaborone.\n📞 Tel: +267 368 5400`);
     }
 
-    // DEFAULT
+    // DEFAULT RESPONSE
     else {
-      twiml.message("I didn't recognize that. Type *Menu* to see options.");
+      twiml.message("🤖 Type *Menu* to see available options.");
     }
   } catch (err) {
-    twiml.message("⚠️ Service temporarily unavailable.");
+    console.error(err);
+    twiml.message("⚠️ Service busy. Please try again.");
   }
 
   res.writeHead(200, { 'Content-Type': 'text/xml' });
   res.end(twiml.toString());
 });
 
-// ── Standard API Routes ──────────────────────────────────────────────────────
+// ── Other Standard Routes ────────────────────────────────────────────────────
 app.use('/api/auth',        authRoutes)
 app.use('/api/complaints',  complaintRoutes)
 app.use('/api/licences',    licenceRoutes)
@@ -118,6 +122,6 @@ app.use('/api/dashboard',   dashboardRoutes)
 app.use('/api/chat',        chatRoutes)
 app.use('/api/documents',   documentRoutes)
 
-app.listen(PORT, () => console.log(`BOCRA Backend running on ${PORT}`))
+app.listen(PORT, () => console.log(`BOCRA Backend active on port ${PORT}`))
 
 export default app

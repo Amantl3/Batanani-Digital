@@ -11,6 +11,7 @@ import {
   myApplications,
 } from './controller'
 import { protect } from '../../middleware/auth'
+import { verifyRecaptcha } from '../../middleware/recaptcha'
 
 const router = Router()
 
@@ -21,8 +22,8 @@ router.get('/my-applications',  protect, myApplications)
 router.get('/pending',          protect, pendingLicences)
 router.get('/expiring-soon',    protect, expiringSoonLicences)
 
-router.post('/',                protect, applyForLicence)
-router.post('/apply',           protect, applyForLicence)
+router.post('/',                protect, verifyRecaptcha, applyForLicence)
+router.post('/apply',           protect, verifyRecaptcha, applyForLicence)
 
 router.get('/',                 listLicences)
 router.get('/:id',              getLicenceById)

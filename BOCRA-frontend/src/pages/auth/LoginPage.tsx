@@ -64,12 +64,6 @@ export default function LoginPage() {
           <Link to="/">
             <img src="/bocra-logo-white.png" alt="BOCRA" className="h-10 w-auto" />
           </Link>
-          <div className="mt-3 flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-bocra-teal" />
-            <div className="h-2 w-2 rounded-full bg-bocra-green" />
-            <div className="h-2 w-2 rounded-full bg-bocra-red" />
-            <div className="h-2 w-2 rounded-full bg-bocra-gold" />
-          </div>
         </div>
 
         {/* Middle — headline */}

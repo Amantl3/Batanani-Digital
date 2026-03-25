@@ -168,23 +168,30 @@ export default function HomePage() {
         </div>
 
         {/* ── Stats strip pinned to bottom of hero ── */}
-        <div className="absolute bottom-0 left-0 right-0 z-10">
+        <div className="absolute bottom-0 left-0 right-0 z-10 px-4 py-3 sm:px-0 sm:py-0">
           <div className="container-page">
             <motion.div
               variants={stagger}
               initial="hidden"
               animate="show"
-              className="grid grid-cols-2 divide-x divide-white/10 border-t border-white/10 bg-bocra-navy/85 backdrop-blur-md sm:grid-cols-4"
+              className="overflow-hidden rounded-t-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg shadow-slate-950/30 ring-1 ring-white/30"
             >
-              {STATS.map((s) => (
-                <motion.div key={s.label} variants={fadeUp} className="flex items-center gap-3 px-6 py-5">
-                  <s.icon className="h-5 w-5 shrink-0 text-bocra-teal" />
-                  <div>
-                    <p className="font-heading text-2xl font-bold text-white">{s.value}</p>
-                    <p className="text-xs text-white/50">{s.label}</p>
-                  </div>
-                </motion.div>
-              ))}
+              <div className="grid grid-cols-1 divide-y divide-white/15 sm:grid-cols-4 sm:divide-y-0 sm:divide-x">
+                {STATS.map((s) => (
+                  <motion.div
+                    key={s.label}
+                    variants={fadeUp}
+                    className="flex items-center gap-3 px-5 py-4 text-center sm:text-left sm:px-6 sm:py-5"
+                  >
+                    <s.icon className="mx-auto h-5 w-5 shrink-0 text-bocra-teal sm:mx-0" />
+                    <div>
+                      <p className="font-heading text-2xl font-bold text-white">{s.value}</p>
+                      <p className="text-xs text-white/70">{s.label}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="h-1 bg-gradient-to-r from-bocra-teal via-bocra-gold to-bocra-green" />
             </motion.div>
           </div>
         </div>

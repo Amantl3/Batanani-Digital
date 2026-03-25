@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 
 import { useLicences } from '@/hooks/useLicences'
+import { exportToCSV, exportToPDF, exportFeeSchedulePDF } from '@/utils/exportUtils'
 import StatusBadge from '@/components/shared/StatusBadge'
 import { formatDate, formatCategory } from '@/utils/formatters'
 import { LICENCE_CATEGORIES, LICENCE_STATUSES } from '@/utils/constants'
@@ -158,8 +159,8 @@ export default function LicensingPage() {
               <Link to="/portal" className="flex items-center gap-2 rounded-xl bg-bocra-teal px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-600 transition-colors">
                 Apply for new licence
               </Link>
-              <button className="flex items-center gap-2 rounded-xl border border-white/20 px-5 py-2.5 text-sm font-medium text-white/80 hover:bg-white/10 transition-colors">
-                <Download className="h-4 w-4" /> Schedule
+              <button onClick={() => exportFeeSchedulePDF()} className="flex items-center gap-2 rounded-xl border border-white/20 px-5 py-2.5 text-sm font-medium text-white/80 hover:bg-white/10 transition-colors">
+                <Download className="h-4 w-4" /> Fee schedule
               </button>
             </div>
           </div>
@@ -217,8 +218,20 @@ export default function LicensingPage() {
             {isFetching && !isLoading && <span className="ml-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-200 border-t-bocra-teal" />}
           </p>
           <div className="flex gap-3">
-            <button className="flex items-center gap-1.5 text-xs font-medium text-bocra-teal hover:underline"><Download className="h-3.5 w-3.5" /> Export CSV</button>
-            <button className="flex items-center gap-1.5 text-xs font-medium text-bocra-teal hover:underline"><Download className="h-3.5 w-3.5" /> Export PDF</button>
+            <button onClick={() => exportToCSV(
+              (data?.data ?? []).map(l => ({ 'Licence no': l.licenceNumber, 'Holder': l.holderName, 'Category': l.category, 'Status': l.status, 'Issued': l.issuedAt, 'Expires': l.expiresAt ?? 'N/A' })),
+              'BOCRA-licences'
+            )} className="flex items-center gap-1.5 text-xs font-medium text-bocra-teal hover:underline">
+              <Download className="h-3.5 w-3.5" /> Export CSV
+            </button>
+            <button onClick={() => exportToPDF(
+              'Licence Registry',
+              ['Licence no.', 'Holder', 'Category', 'Status', 'Expires'],
+              (data?.data ?? []).map(l => [l.licenceNumber, l.holderName, l.category, l.status, l.expiresAt ?? 'N/A']),
+              'BOCRA-licences'
+            )} className="flex items-center gap-1.5 text-xs font-medium text-bocra-teal hover:underline">
+              <Download className="h-3.5 w-3.5" /> Export PDF
+            </button>
           </div>
         </div>
 
@@ -273,7 +286,7 @@ export default function LicensingPage() {
                         </tr>
                       ))
                       : data?.data.map(lic => (
-                        <tr key={lic.id} onClick={() => setSelected(lic as Licence)} className={cn('cursor-pointer', selected?.id === lic.id && 'bg-bocra-teal/5')}>
+                        <tr key={lic.id} onClick={() => setSelected(lic)} className={cn('cursor-pointer', selected?.id === lic.id && 'bg-bocra-teal/5')}>
                           <td><span className="font-mono text-xs font-bold text-bocra-teal">{lic.licenceNumber}</span></td>
                           <td className="hidden font-medium sm:table-cell">{lic.holderName}</td>
                           <td className="hidden md:table-cell">
@@ -283,7 +296,7 @@ export default function LicensingPage() {
                           <td className="hidden lg:table-cell text-slate-500">{formatDate(lic.expiresAt)}</td>
                           <td><StatusBadge status={lic.status as LicenceStatus} /></td>
                           <td>
-                            <button onClick={e => { e.stopPropagation(); setSelected(lic as Licence) }}
+                            <button onClick={e => { e.stopPropagation(); setSelected(lic) }}
                               className="text-xs font-semibold text-bocra-teal hover:underline">View</button>
                           </td>
                         </tr>

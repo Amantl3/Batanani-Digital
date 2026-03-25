@@ -7,7 +7,7 @@ import { useAuth }    from '@/hooks/useAuth'
 import { useUIStore } from '@/store/uiStore'
 import { cn }         from '@/utils/cn'
 
-// Nav links defined locally so we control labels exactly
+// Nav links defined locally
 const NAV = [
   { label: 'Home',          path: '/',            requiresAuth: false },
   { label: 'Licensing',     path: '/licensing',   requiresAuth: false },
@@ -27,20 +27,22 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
-  const isAdmin = user ? user.role === 'admin' : false
-  const visibleLinks = NAV.filter(l => {
-    if (l.requiresAdmin && !isAdmin) return false
-    if (l.requiresAuth && !isAuthenticated) return false
+  const isAdmin = user?.role === 'admin'
+
+  // Filter visible links based on auth and role
+  const visibleLinks = NAV.filter(link => {
+    if (link.requiresAdmin && !isAdmin) return false
+    if (link.requiresAuth && !isAuthenticated) return false
+    if (link.path === '/portal' && isAdmin) return false // hide portal for admins
     return true
   })
 
   const initials = user?.fullName
-    .split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+    .split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
   return (
     <header className="sticky top-0 z-50 bg-bocra-navy shadow-lg">
-
-      {/* ── Top utility bar ─────────────────────────────────── */}
+      {/* Top utility bar */}
       <div className="hidden border-b border-white/5 lg:block">
         <div className="container-page flex items-center justify-between py-1.5">
           <div className="flex items-center gap-2 text-xs text-white/40">
@@ -48,12 +50,8 @@ export default function Navbar() {
             All systems operational
           </div>
           <div className="flex items-center gap-5 text-xs text-white/40">
-            <a href="tel:+2673957755" className="transition-colors hover:text-white">
-              + 267 395 7755
-            </a>
-            <a href="mailto:info@bocra.org.bw" className="transition-colors hover:text-white">
-              ✉ info@bocra.org.bw
-            </a>
+            <a href="tel:+2673957755" className="transition-colors hover:text-white">+ 267 395 7755</a>
+            <a href="mailto:info@bocra.org.bw" className="transition-colors hover:text-white">✉ info@bocra.org.bw</a>
             <div className="flex overflow-hidden rounded border border-white/10">
               <button className="bg-bocra-teal px-2.5 py-0.5 text-xs font-semibold text-white">EN</button>
               <button className="px-2.5 py-0.5 text-xs text-white/40 transition-colors hover:text-white">ST</button>
@@ -62,28 +60,13 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── Main nav bar ────────────────────────────────────── */}
+      {/* Main nav bar */}
       <div className="container-page">
         <div className="flex h-16 items-center justify-between gap-4">
 
-          {/* Logo — uses transparent PNG on dark background */}
+          {/* Logo */}
           <Link to="/" className="flex shrink-0 items-center gap-3">
-            {/*
-              bocra-logo-white.png = transparent background, white/coloured text
-              This looks correct on the dark navy navbar
-            */}
-            <img
-              src="/bocra-logo-white.png"
-              alt="BOCRA"
-              className="h-9 w-auto"
-            />
-            {/* Four brand dots matching the logo */}
-            {/*<div className="hidden items-center gap-1 sm:flex">
-              <div className="h-2 w-2 rounded-full bg-bocra-teal" />
-              <div className="h-2 w-2 rounded-full bg-bocra-green" />
-              <div className="h-2 w-2 rounded-full bg-bocra-red" />
-              <div className="h-2 w-2 rounded-full bg-bocra-gold" />
-            </div>*/}
+            <img src="/bocra-logo-white.png" alt="BOCRA" className="h-9 w-auto" />
           </Link>
 
           {/* Desktop nav links */}
@@ -107,7 +90,6 @@ export default function Navbar() {
 
           {/* Right-side actions */}
           <div className="flex items-center gap-1">
-
             {/* Search */}
             <button
               onClick={() => setSearchOpen(s => !s)}
@@ -120,10 +102,7 @@ export default function Navbar() {
             {isAuthenticated && user ? (
               <>
                 {/* Notifications */}
-                <button
-                  className="relative rounded-lg p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-                  aria-label="Notifications"
-                >
+                <button className="relative rounded-lg p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white" aria-label="Notifications">
                   <Bell className="h-5 w-5" />
                   <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-bocra-red" />
                 </button>
@@ -149,12 +128,17 @@ export default function Navbar() {
                           <p className="text-sm font-semibold text-slate-900">{user.fullName}</p>
                           <p className="mt-0.5 text-xs text-slate-500">{user.email}</p>
                         </div>
-                        <button
-                          onClick={() => { setProfileOpen(false); navigate('/portal') }}
-                          className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
-                        >
-                          <User className="h-4 w-4 text-slate-400" /> My Portal
-                        </button>
+
+                        {/* Show "My Portal" only for non-admin users */}
+                        {!isAdmin && (
+                          <button
+                            onClick={() => { setProfileOpen(false); navigate('/portal') }}
+                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+                          >
+                            <User className="h-4 w-4 text-slate-400" /> My Portal
+                          </button>
+                        )}
+
                         <div className="border-t border-slate-100 pt-1">
                           <button
                             onClick={() => { setProfileOpen(false); logout() }}
@@ -197,7 +181,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── Expandable search bar ────────────────────────────── */}
+      {/* Expandable search bar */}
       {searchOpen && (
         <div className="animate-fade-in border-t border-white/10 bg-bocra-navy/95 backdrop-blur-md">
           <div className="container-page flex items-center gap-3 py-3">
@@ -208,17 +192,14 @@ export default function Navbar() {
               placeholder="Search licences, regulations, publications, FAQs…"
               className="flex-1 border-none bg-transparent py-1 text-sm text-white placeholder:text-white/35 focus:outline-none"
             />
-            <button
-              onClick={() => setSearchOpen(false)}
-              className="text-white/40 transition-colors hover:text-white"
-            >
+            <button onClick={() => setSearchOpen(false)} className="text-white/40 transition-colors hover:text-white">
               <X className="h-4 w-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* ── Mobile drawer ────────────────────────────────────── */}
+      {/* Mobile drawer */}
       {navOpen && (
         <div className="animate-fade-in border-t border-white/10 bg-bocra-navy px-4 pb-5 pt-2 lg:hidden">
           <nav className="flex flex-col gap-1">
@@ -230,9 +211,7 @@ export default function Navbar() {
                 onClick={toggleNav}
                 className={({ isActive }) => cn(
                   'rounded-lg px-4 py-2.5 text-sm font-medium',
-                  isActive
-                    ? 'bg-bocra-teal/10 text-bocra-teal'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  isActive ? 'bg-bocra-teal/10 text-bocra-teal' : 'text-white/70 hover:bg-white/10 hover:text-white'
                 )}
               >
                 {link.label}

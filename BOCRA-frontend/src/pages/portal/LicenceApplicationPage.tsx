@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import ReCAPTCHA from 'react-google-recaptcha'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -100,6 +101,8 @@ export default function LicenceApplicationPage() {
   const [step2Data, setStep2] = useState<Partial<Step2Data>>({})
   const [step3Data, setStep3] = useState<Partial<Step3Data>>({})
   const [refNumber, setRefNumber] = useState('')
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const captchaRef = useRef<ReCAPTCHA>(null)
 
   const form1 = useForm<Step1Data>({ resolver: zodResolver(step1Schema) })
   const form2 = useForm<Step2Data>({ resolver: zodResolver(step2Schema) })
@@ -120,6 +123,10 @@ export default function LicenceApplicationPage() {
       setRefNumber(data.reference || 'APP-2025-00001')
       qc.invalidateQueries({ queryKey: ['licences', 'my-applications'] })
       setStep(5)
+    },
+    onError: () => {
+      setCaptchaToken(null)
+      captchaRef.current?.reset()
     },
   })
 
@@ -284,9 +291,17 @@ export default function LicenceApplicationPage() {
                   ))}
                   <div className="rounded-xl border border-slate-200 p-4"><p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Documents ({files.length} attached)</p>{files.length === 0 ? <p className="text-sm text-amber-600">⚠ No documents — you can still submit but may be asked later.</p> : <div className="flex flex-wrap gap-2">{files.map(f => <span key={f.name} className="rounded-lg bg-bocra-teal/10 px-2 py-1 text-xs font-medium text-bocra-teal">{f.name}</span>)}</div>}</div>
                   <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4"><Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" /><p className="text-xs leading-relaxed text-amber-800">Submitting confirms your declaration. False information is an offence under the CRA Act.</p></div>
+                  <div className="flex justify-center pt-2">
+                    <ReCAPTCHA
+                      ref={captchaRef}
+                      sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY ?? ''}
+                      onChange={token => setCaptchaToken(token)}
+                      onExpired={() => setCaptchaToken(null)}
+                    />
+                  </div>
                   <div className="flex justify-between pt-2">
-                    <button onClick={() => setStep(3)} className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">← Back</button>
-                    <button onClick={onSubmit} disabled={applyMutation.isPending} className="flex items-center gap-2 rounded-xl bg-bocra-teal px-8 py-3 text-sm font-bold text-white hover:bg-teal-600 hover:-translate-y-0.5 transition-all disabled:opacity-60">
+                    <button type="button" onClick={() => setStep(3)} className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">← Back</button>
+                    <button type="button" onClick={onSubmit} disabled={applyMutation.isPending || !captchaToken} className="flex items-center gap-2 rounded-xl bg-bocra-teal px-8 py-3 text-sm font-bold text-white hover:bg-teal-600 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0">
                       {applyMutation.isPending ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Submitting…</> : <><CheckCircle className="h-4 w-4" />Submit application</>}
                     </button>
                   </div>

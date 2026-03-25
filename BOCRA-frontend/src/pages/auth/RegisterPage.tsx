@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import ReCAPTCHA from 'react-google-recaptcha'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -74,6 +75,8 @@ export default function RegisterPage() {
   const { register: registerUser, isRegistering } = useAuth()
   const [showPass, setShowPass]       = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const captchaRef = useRef<ReCAPTCHA>(null)
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -241,8 +244,17 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  <button type="submit" disabled={isRegistering}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-bocra-navy py-3.5 text-sm font-bold text-white transition-all hover:bg-bocra-navy/90 hover:-translate-y-0.5 disabled:opacity-60 disabled:translate-y-0">
+                  <div className="flex justify-center">
+                    <ReCAPTCHA
+                      ref={captchaRef}
+                      sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY ?? ''}
+                      onChange={token => setCaptchaToken(token)}
+                      onExpired={() => setCaptchaToken(null)}
+                    />
+                  </div>
+
+                  <button type="submit" disabled={isRegistering || !captchaToken}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-bocra-navy py-3.5 text-sm font-bold text-white transition-all hover:bg-bocra-navy/90 hover:-translate-y-0.5 disabled:opacity-60 disabled:translate-y-0 disabled:cursor-not-allowed">
                     {isRegistering
                       ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Creating account…</>
                       : <>Create account <ArrowRight className="h-4 w-4" /></>

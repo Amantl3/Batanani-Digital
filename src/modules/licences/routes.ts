@@ -8,13 +8,18 @@ import { protect } from '../../middleware/auth'
 
 const router = Router()
 
+// Named/static routes MUST come before /:id to avoid route conflicts
 router.get('/stats',         licenceStats)
 router.get('/recent',        recentLicences)
 router.get('/pending',       protect, pendingLicences)
 router.get('/expiring-soon', protect, expiringSoonLicences)
+
+// POST / and POST /apply are the same handler — supports both frontend call patterns
+router.post('/',             protect, applyForLicence)
+router.post('/apply',        protect, applyForLicence)
+
 router.get('/',              listLicences)
 router.get('/:id',           getLicence)
-router.post('/',             protect, applyForLicence)
 router.patch('/:id/status',  protect, updateStatus)
 
 export default router

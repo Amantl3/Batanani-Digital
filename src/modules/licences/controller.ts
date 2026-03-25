@@ -267,3 +267,13 @@ export const suspendedLicences = async (_req: Request, res: Response) => {
     res.status(500).json({ success: false, error: error.message })
   }
 }
+export const myApplications = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id
+    const data = await getAllLicences({ userId, page: 1, limit: 50 })
+    res.json({ success: true, data: data.results.map(mapLicence) })
+  } catch (error: any) {
+    console.error('[myApplications]', error.message)
+    res.status(500).json({ success: false, error: error.message })
+  }
+}

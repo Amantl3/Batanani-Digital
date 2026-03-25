@@ -15,15 +15,15 @@ export interface LicenceFilters {
 // ── getAllLicences ─────────────────────────────────────────────────────────────
 export const getAllLicences = async (filters: LicenceFilters & { userId?: string } = {}) => {
   const { search, type, status, userId, page = 1, limit = 15 } = filters
-  let query = supabase.from('licences').select('*', { count: 'exact' })
+  let query = supabase.from('Licence').select('*', { count: 'exact' })
 
-  if (search)  query = query.or(`company_name.ilike.%${search}%,id.ilike.%${search}%`)
+  if (search)  query = query.or(`companyName.ilike.%${search}%,id.ilike.%${search}%`)
   if (type)    query = query.eq('type', type)
   if (status)  query = query.eq('status', status)
-  if (userId)  query = query.eq('user_id', userId)
+  if (userId)  query = query.eq('userId', userId)
 
   const from = (page - 1) * limit
-  query = query.range(from, from + limit - 1).order('created_at', { ascending: false })
+  query = query.range(from, from + limit - 1).order('createdAt', { ascending: false })
 
   const { data, error, count } = await query
   if (error) throw new Error(error.message)
@@ -43,7 +43,7 @@ export const getLicences = getAllLicences
 // ── getLicenceById ────────────────────────────────────────────────────────────
 export const getLicenceById = async (id: string) => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
     .eq('id', id)
     .single()
@@ -60,11 +60,11 @@ export const createLicence = async (payload: {
   declaration?: boolean
 }) => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .insert({
       type:         payload.type,
-      company_name: payload.companyName,
-      user_id:      payload.userId,
+      companyName: payload.companyName,
+      userId:      payload.userId,
       documents:    payload.documents ?? [],
       status:       'pending',
     })
@@ -77,7 +77,7 @@ export const createLicence = async (payload: {
 // ── updateLicenceStatus ───────────────────────────────────────────────────────
 export const updateLicenceStatus = async (id: string, status: string) => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .update({ status })
     .eq('id', id)
     .select()
@@ -88,7 +88,7 @@ export const updateLicenceStatus = async (id: string, status: string) => {
 
 // ── deleteLicence ─────────────────────────────────────────────────────────────
 export const deleteLicence = async (id: string) => {
-  const { error } = await supabase.from('licences').delete().eq('id', id)
+  const { error } = await supabase.from('Licence').delete().eq('id', id)
   if (error) throw new Error(error.message)
   return { deleted: true }
 }
@@ -96,7 +96,7 @@ export const deleteLicence = async (id: string) => {
 // ── getLicenceStats ───────────────────────────────────────────────────────────
 export const getLicenceStats = async () => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('status')
   if (error) throw new Error(error.message)
 
@@ -116,7 +116,7 @@ export const getLicenceStats = async () => {
 
 // ── getLicencesByType ─────────────────────────────────────────────────────────
 export const getLicencesByType = async () => {
-  const { data, error } = await supabase.from('licences').select('type')
+  const { data, error } = await supabase.from('Licence').select('type')
   if (error) throw new Error(error.message)
 
   return (data ?? []).reduce((acc: Record<string, number>, row) => {
@@ -128,9 +128,9 @@ export const getLicencesByType = async () => {
 // ── getRecentLicences ─────────────────────────────────────────────────────────
 export const getRecentLicences = async (limit = 5) => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('createdAt', { ascending: false })
     .limit(limit)
   if (error) throw new Error(error.message)
   return data ?? []
@@ -139,10 +139,10 @@ export const getRecentLicences = async (limit = 5) => {
 // ── getPendingLicences ────────────────────────────────────────────────────────
 export const getPendingLicences = async () => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
     .eq('status', 'pending')
-    .order('created_at', { ascending: false })
+    .order('createdAt', { ascending: false })
   if (error) throw new Error(error.message)
   return data ?? []
 }
@@ -153,11 +153,11 @@ export const getExpiringSoonLicences = async () => {
   thirtyDays.setDate(thirtyDays.getDate() + 30)
 
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
     .eq('status', 'active')
-    .lte('expires_at', thirtyDays.toISOString())
-    .order('expires_at', { ascending: true })
+    .lte('expiresAt', thirtyDays.toISOString())
+    .order('expiresAt', { ascending: true })
   if (error) throw new Error(error.message)
   return data ?? []
 }
@@ -169,10 +169,10 @@ export const getLicencesIssuedThisMonth = async () => {
   start.setHours(0, 0, 0, 0)
 
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
-    .gte('created_at', start.toISOString())
-    .order('created_at', { ascending: false })
+    .gte('createdAt', start.toISOString())
+    .order('createdAt', { ascending: false })
   if (error) throw new Error(error.message)
   return data ?? []
 }
@@ -180,7 +180,7 @@ export const getLicencesIssuedThisMonth = async () => {
 // ── verifyLicence ─────────────────────────────────────────────────────────────
 export const verifyLicence = async (id: string) => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
     .eq('id', id)
     .single()
@@ -191,10 +191,10 @@ export const verifyLicence = async (id: string) => {
 // ── getLicenceRenewals ────────────────────────────────────────────────────────
 export const getLicenceRenewals = async () => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
     .eq('status', 'renewal_pending')
-    .order('created_at', { ascending: false })
+    .order('createdAt', { ascending: false })
   if (error) throw new Error(error.message)
   return data ?? []
 }
@@ -202,10 +202,10 @@ export const getLicenceRenewals = async () => {
 // ── getLicenceHistory ─────────────────────────────────────────────────────────
 export const getLicenceHistory = async (id: string) => {
   const { data, error } = await supabase
-    .from('licence_history')
+    .from('Licence')
     .select('*')
     .eq('licence_id', id)
-    .order('created_at', { ascending: false })
+    .order('createdAt', { ascending: false })
   if (error) throw new Error(error.message)
   return data ?? []
 }
@@ -213,17 +213,17 @@ export const getLicenceHistory = async (id: string) => {
 // ── getLicencesByUser ─────────────────────────────────────────────────────────
 export const getLicencesByUser = async (userId: string) => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
+    .eq('userId', userId)
+    .order('createdAt', { ascending: false })
   if (error) throw new Error(error.message)
   return { userId, licences: data ?? [], summary: { total: data?.length ?? 0 } }
 }
 
 // ── getMostCommonLicenceTypes ─────────────────────────────────────────────────
 export const getMostCommonLicenceTypes = async () => {
-  const { data, error } = await supabase.from('licences').select('type')
+  const { data, error } = await supabase.from('Licence').select('type')
   if (error) throw new Error(error.message)
 
   const counts = (data ?? []).reduce((acc: Record<string, number>, row) => {
@@ -239,10 +239,10 @@ export const getMostCommonLicenceTypes = async () => {
 // ── getSuspendedLicences ──────────────────────────────────────────────────────
 export const getSuspendedLicences = async () => {
   const { data, error } = await supabase
-    .from('licences')
+    .from('Licence')
     .select('*')
     .eq('status', 'suspended')
-    .order('created_at', { ascending: false })
+    .order('createdAt', { ascending: false })
   if (error) throw new Error(error.message)
   return data ?? []
 }

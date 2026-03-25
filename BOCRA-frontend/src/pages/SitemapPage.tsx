@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { cn } from '@/utils/cn'
+import { Plus, Minus, Layers } from 'lucide-react'
 
 // Fix default marker icon issue in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl

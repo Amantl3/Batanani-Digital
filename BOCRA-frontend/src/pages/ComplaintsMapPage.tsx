@@ -9,11 +9,18 @@ const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transi
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } }
 const scaleIn = { hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1, transition: { duration: 0.3 } } }
 
+interface RegionData {
+  region: string
+  complaints: number
+  trend: string
+  color: string
+}
+
 export default function ComplaintsMapPage() {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
 
-  const mockData = [
+  const mockData: RegionData[] = [
     { region: 'Gaborone', complaints: 245, trend: '+12%', color: '#ef4444' },
     { region: 'Francistown', complaints: 156, trend: '+8%', color: '#f97316' },
     { region: 'Maun', complaints: 89, trend: '+3%', color: '#eab308' },
@@ -37,10 +44,7 @@ export default function ComplaintsMapPage() {
     setIsExporting(true)
     try {
       const exportDate = new Date()
-      const totalComplaints = mockData.reduce((sum, region) => sum + region.complaints, 0)
-      const avgComplaints = Math.round(totalComplaints / mockData.length)
-      
-      // Create CSV content with metadata header
+
       const csvLines = [
         'BOCRA COMPLAINTS ANALYTICS - DATA EXPORT',
         `Exported: ${exportDate.toLocaleString()}`,
@@ -52,34 +56,29 @@ export default function ComplaintsMapPage() {
         'Region,Number of Complaints,Trend (%)',
       ]
 
-      // Add data rows
       mockData.forEach(region => {
         csvLines.push(`"${region.region}",${region.complaints},"${region.trend}"`)
       })
 
-      // Add summary statistics
       csvLines.push('')
       csvLines.push('SUMMARY STATISTICS')
       csvLines.push(`Top Region,"${topRegion.region}",${topRegion.complaints} complaints`)
-      csvLines.push(`Highest Activity,"${topRegion.region}","${topRegion.color}"`)
       csvLines.push(`Data Points,${mockData.length} regions`)
       csvLines.push(`Report Generated,${exportDate.toISOString()}`)
 
       const csvContent = csvLines.join('\n')
-
-      // Create blob and download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
-      
+
       link.setAttribute('href', url)
       link.setAttribute('download', `complaints-data-${exportDate.toISOString().split('T')[0]}.csv`)
       link.style.visibility = 'hidden'
-      
+
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       toast.success(`📊 Data exported: ${totalComplaints} complaints across ${mockData.length} regions`)
     } catch (error) {
       console.error('Export failed:', error)
@@ -212,7 +211,7 @@ export default function ComplaintsMapPage() {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity Levels</h3>
               <div className="space-y-3">
-                {legendItems.map((item, index) => (
+                {legendItems.map((item) => (
                   <motion.div
                     key={item.label}
                     variants={scaleIn}
@@ -239,15 +238,15 @@ export default function ComplaintsMapPage() {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Regional Breakdown</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {mockData.map((region, index) => (
+                {mockData.map((region) => (
                   <motion.div
                     key={region.region}
                     variants={scaleIn}
                     className={cn(
-                      "p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md",
+                      'p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md',
                       selectedRegion === region.region
-                        ? "border-bocra-teal bg-bocra-teal/5 shadow-md"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? 'border-bocra-teal bg-bocra-teal/5 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300'
                     )}
                     onClick={() => setSelectedRegion(region.region)}
                   >
@@ -255,8 +254,8 @@ export default function ComplaintsMapPage() {
                       <h4 className="font-semibold text-gray-900">{region.region}</h4>
                       <span
                         className={cn(
-                          "text-xs px-2 py-1 rounded-full font-medium",
-                          region.trend.startsWith('+') ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          'text-xs px-2 py-1 rounded-full font-medium',
+                          region.trend.startsWith('+') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         )}
                       >
                         {region.trend}
@@ -272,7 +271,7 @@ export default function ComplaintsMapPage() {
                           className="h-2 rounded-full transition-all duration-500"
                           style={{
                             width: `${(region.complaints / topRegion.complaints) * 100}%`,
-                            backgroundColor: region.color
+                            backgroundColor: region.color,
                           }}
                         ></div>
                       </div>

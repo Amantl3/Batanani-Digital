@@ -31,7 +31,7 @@ export const getLicenceById = (id: string) =>
 
 // ── Authenticated ─────────────────────────────────────────────────────────────
 export const applyForLicence = (payload: ApplyPayload) =>
-  api.post<LicenceApplication>('/licences/apply', payload).then((r) => r.data)
+  api.post<LicenceApplication>('/licences', payload).then((r) => r.data)
 
 export const getMyApplications = () =>
   api.get<LicenceApplication[]>('/licences/my-applications').then((r) => r.data)

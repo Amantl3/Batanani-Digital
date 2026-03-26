@@ -29,12 +29,12 @@ export const getLicences = (filters: LicenceFilters = {}) =>
 export const getLicenceById = (id: string) =>
   api.get<Licence>(`/licences/${id}`).then((r) => r.data)
 
-// ── Authenticated ─────────────────────────────────────────────────────────────
+// ── Public (no auth) ──────────────────────────────────────────────────────────
 export const applyForLicence = (payload: ApplyPayload) =>
   api.post<LicenceApplication>('/licences', payload).then((r) => r.data)
 
 export const getMyApplications = () =>
-  api.get<LicenceApplication[]>('/licences/my-applications').then((r) => r.data)
+  api.get<LicenceApplication[]>('/licences').then((r) => r.data)
 
 export const renewLicence = (id: string, documents: string[]) =>
   api

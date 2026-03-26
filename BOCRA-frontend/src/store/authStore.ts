@@ -44,10 +44,10 @@ export const useAuthStore = create<AuthStore>()(
       },
     }),
     {
-      name:       'bocra-auth',
-      storage:    createJSONStorage(() => localStorage),
-      // Only persist the user object — never the token
-      partialize: (state) => ({ user: state.user }),
+      name:    'bocra-auth',
+      storage: createJSONStorage(() => localStorage),
+      // Now persists BOTH user and token so judges stay logged in on refresh
+      partialize: (state) => ({ user: state.user, accessToken: state.accessToken }),
     }
   )
 )

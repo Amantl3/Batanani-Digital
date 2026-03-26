@@ -1,18 +1,24 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Direct link to your LIVE Railway backend
-  baseURL: 'https://batanani-digital-production.up.railway.app/api', 
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: 'https://batanani-digital-production.up.railway.app/api',
 });
 
-// This attaches your login token to every request automatically
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const authData = localStorage.getItem('bocra-auth');
+  
+  if (authData) {
+    try {
+      const parsed = JSON.parse(authData);
+      // We try to find the token, but we don't block if it's missing
+      const token = parsed.state?.token || parsed.state?.user?.token;
+
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (e) {
+      console.warn("Hackathon bypass: Requesting without valid token structure");
+    }
   }
   return config;
 });

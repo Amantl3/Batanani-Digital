@@ -1,204 +1,73 @@
-import { supabase } from "../../config/supabase";
+/**
+ * src/modules/complaints/service.ts
+ */
+import { supabase } from '../../config/supabase'
 
-export const submitComplaint = async (payload: {
-  providerLicenceId: string;
-  category: string;
-  description: string;
-  contact: { name: string; email: string; phone: string };
-  attachments?: string[];
-}) => {
-  const year = new Date().getFullYear();
-  const { count } = await supabase
-    .from("Complaint")
-    .select("*", { count: "exact", head: true });
+export interface ComplaintFilters {
+  status?: string
+  category?: string
+  provider?: string
+  userId?: string
+  page?: number
+  limit?: number
+  search?: string // Added this to fix the 'search' error
+}
 
-  const sequence = String((count ?? 0) + 1).padStart(5, "0");
-  const refNumber = `CMP-${year}-${sequence}`;
+export const getAllComplaints = async (filters: ComplaintFilters = {}) => {
+  const { status, category, provider, userId, page = 1, limit = 15, search } = filters
+  let query = supabase.from('Complaint').select('*', { count: 'exact' })
 
-  const { data, error } = await supabase
-    .from("Complaint")
-    .insert([{
-      refNumber,
-      status: "open",
-      category: payload.category,
-      provider: payload.providerLicenceId,
-      description: payload.description,
-      userId: payload.contact.email,
-    }])
-    .select()
-    .single();
+  if (status) query = query.eq('status', status)
+  if (category) query = query.eq('category', category)
+  if (provider) query = query.eq('provider', provider)
+  if (userId) query = query.eq('userId', userId)
+  if (search) query = query.ilike('description', `%${search}%`)
 
-  if (error) throw new Error(error.message);
-  return { referenceNumber: refNumber, complaint: data };
-};
-
-export const getAllComplaints = async (filters: {
-  status?: string;
-  category?: string;
-  provider?: string;
-  userId?: string;
-  page?: number;
-  limit?: number;
-}) => {
-  const page = filters.page ?? 1;
-  const limit = filters.limit ?? 10;
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
-
-  let query = supabase.from("Complaint").select("*", { count: "exact" });
-
-  if (filters.status) query = query.eq("status", filters.status);
-  if (filters.category) query = query.ilike("category", `%${filters.category}%`);
-  if (filters.provider) query = query.ilike("provider", `%${filters.provider}%`);
-  if (filters.userId) query = query.eq("userId", filters.userId);
+  const from = (page - 1) * limit
+  query = query.range(from, from + limit - 1).order('createdAt', { ascending: false })
 
   const { data, error, count } = await query
-    .order("createdAt", { ascending: false })
-    .range(from, to);
-
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(error.message)
 
   return {
     results: data ?? [],
     total: count ?? 0,
-    page,
-    limit,
-    totalPages: Math.ceil((count ?? 0) / limit),
-  };
-};
-
-export const getComplaintById = async (id: string) => {
-  const { data, error } = await supabase
-    .from("Complaint")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Complaint not found");
-  return data;
-};
-
-export const trackComplaint = async (refNumber: string) => {
-  const { data, error } = await supabase
-    .from("Complaint")
-    .select("*")
-    .eq("refNumber", refNumber)
-    .single();
-
-  if (error || !data) {
-    return { found: false, message: "No complaint found with that reference number" };
   }
+}
 
-  const submittedAt = new Date(data.createdAt);
-  const now = new Date();
-  const daysOpen = Math.ceil((now.getTime() - submittedAt.getTime()) / (1000 * 60 * 60 * 24));
-
-  const statusMap: Record<string, string> = {
-    "open": "submitted",
-    "in-progress": "in_review",
-    "escalated": "escalated",
-    "resolved": "resolved",
-    "closed": "closed",
-  };
-
-  return {
-    found: true,
-    referenceNumber: data.refNumber,
-    providerName: data.provider,
-    category: data.category,
-    description: data.description,
-    status: statusMap[data.status] ?? "submitted",
-    submittedAt: data.createdAt,
-    resolvedAt: data.status === "resolved" ? data.createdAt : null,
-    daysOpen,
-  };
-};
+export const createComplaint = async (payload: any) => {
+  const { data, error } = await supabase
+    .from('Complaint')
+    .insert([{ ...payload, status: 'pending' }])
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  return data
+}
 
 export const updateComplaintStatus = async (id: string, status: string) => {
-  const validStatuses = ["open", "in-progress", "resolved", "closed", "escalated"];
-  if (!validStatuses.includes(status)) {
-    throw new Error(`Invalid status. Must be one of: ${validStatuses.join(", ")}`);
-  }
-
   const { data, error } = await supabase
-    .from("Complaint")
+    .from('Complaint')
     .update({ status })
-    .eq("id", id)
+    .eq('id', id)
     .select()
-    .single();
-
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Complaint not found");
-  return data;
-};
+    .single()
+  if (error) throw new Error(error.message)
+  return data
+}
 
 export const getComplaintStats = async () => {
-  const [
-    { count: total },
-    { count: open },
-    { count: inProgress },
-    { count: resolved },
-    { count: closed },
-    { count: escalated },
-  ] = await Promise.all([
-    supabase.from("Complaint").select("*", { count: "exact", head: true }),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "open"),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "in-progress"),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "resolved"),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "closed"),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "escalated"),
-  ]);
+  const { data, error } = await supabase.from('Complaint').select('status, category')
+  if (error) throw new Error(error.message)
 
-  const totalCount = total ?? 0;
-  const resolvedCount = resolved ?? 0;
+  const stats = (data ?? []).reduce((acc: any, curr: any) => {
+    acc[curr.status] = (acc[curr.status] ?? 0) + 1
+    return acc
+  }, {})
 
   return {
-    total: totalCount,
-    open: open ?? 0,
-    inProgress: inProgress ?? 0,
-    resolved: resolvedCount,
-    closed: closed ?? 0,
-    escalated: escalated ?? 0,
-    resolutionRate: totalCount > 0 ? Number(((resolvedCount / totalCount) * 100).toFixed(1)) : 0,
-  };
-};
-
-export const getComplaintsByCategory = async () => {
-  const { data, error } = await supabase.from("Complaint").select("category");
-  if (error) throw new Error(error.message);
-
-  const grouped: Record<string, number> = {};
-  for (const item of data ?? []) {
-    grouped[item.category] = (grouped[item.category] ?? 0) + 1;
+    total: data?.length ?? 0,
+    pending: stats['pending'] ?? 0,
+    resolved: stats['resolved'] ?? 0,
   }
-
-  return Object.entries(grouped)
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count);
-};
-
-export const getComplaintsByProvider = async () => {
-  const { data, error } = await supabase.from("Complaint").select("provider");
-  if (error) throw new Error(error.message);
-
-  const grouped: Record<string, number> = {};
-  for (const item of data ?? []) {
-    grouped[item.provider] = (grouped[item.provider] ?? 0) + 1;
-  }
-
-  return Object.entries(grouped)
-    .map(([provider, count]) => ({ provider, count }))
-    .sort((a, b) => b.count - a.count);
-};
-
-export const getRecentComplaints = async (limit = 5) => {
-  const { data, error } = await supabase
-    .from("Complaint")
-    .select("*")
-    .order("createdAt", { ascending: false })
-    .limit(limit);
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
-};
+}

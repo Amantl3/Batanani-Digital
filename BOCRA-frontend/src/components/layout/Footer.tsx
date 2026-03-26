@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 const LINKS = [
-  { label: 'Privacy policy',  to: '/privacy'       },
+  { label: 'Privacy policy',  to: 'https://www.bocra.org.bw/sites/default/files/documents/Annexure_3.3.1A_ccTLD_BW_Acceptable_User_Policy_Feb_2022.pdf', external: true },
   { label: 'Accessibility',   to: '/accessibility' },
   { label: 'Contact us',      to: '/contact'       },
   { label: 'Sitemap',         to: '/sitemap'       },
@@ -21,13 +21,25 @@ export default function Footer() {
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             {LINKS.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="text-xs text-white/40 transition-colors hover:text-white/70"
-              >
-                {l.label}
-              </Link>
+              l.external ? (
+                <a
+                  key={l.to}
+                  href={l.to}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-white/40 transition-colors hover:text-white/70"
+                >
+                  {l.label}
+                </a>
+              ) : (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  className="text-xs text-white/40 transition-colors hover:text-white/70"
+                >
+                  {l.label}
+                </Link>
+              )
             ))}
 
             {/* Language toggle */}

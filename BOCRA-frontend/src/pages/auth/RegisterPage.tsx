@@ -270,7 +270,7 @@ export default function RegisterPage() {
 
               <motion.p variants={fadeUp} className="mt-4 text-center text-xs leading-relaxed text-slate-400">
                 By creating an account you agree to BOCRA's{' '}
-                <Link to="/privacy" className="underline hover:no-underline">Privacy Policy</Link>
+                <a href="https://www.bocra.org.bw/sites/default/files/documents/Annexure_3.3.1A_ccTLD_BW_Acceptable_User_Policy_Feb_2022.pdf" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Privacy Policy</a>
                 {' '}and{' '}
                 <Link to="/terms" className="underline hover:no-underline">Terms of Use</Link>.
               </motion.p>

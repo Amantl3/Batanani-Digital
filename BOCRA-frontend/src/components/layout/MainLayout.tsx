@@ -3,7 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import AlertBanner from '@components/shared/AlertBanner';
-import WhatsAppFloatingIcon from '@components/WhatsAppFloatingIcon';
+import WhatsAppFloatingIcon from '@components/WhatsAppFloatingIcon'
+import CookieBanner from '@components/shared/CookieBanner';
 
 export default function MainLayout() {
   const { pathname } = useLocation();
@@ -23,6 +24,7 @@ export default function MainLayout() {
 
       {/* Floating WhatsApp Icon */}
       <WhatsAppFloatingIcon number={whatsappNumber} />
+      <CookieBanner />
     </div>
   );
 }

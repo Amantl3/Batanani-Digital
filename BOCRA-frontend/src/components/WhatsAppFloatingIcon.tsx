@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
 
+// --- CONFIGURATION ---
+const TWILIO_NUMBER = "14155238886"; 
+const JOIN_WORD = "evidence-toy";      
+// ---------------------
+
 interface WhatsAppFloatingIconProps {
-  number: string; //  own number
+  number?: string; 
 }
 
-const WhatsAppFloatingIcon: React.FC<WhatsAppFloatingIconProps> = ({ number }) => {
+const WhatsAppFloatingIcon: React.FC<WhatsAppFloatingIconProps> = () => {
   const [hovered, setHovered] = useState(false);
   const [visible, setVisible] = useState(false); 
-  const waLink = `https://wa.me/${number.replace(/\+/g, '')}`;
+  
+  // This creates the link that auto-fills the join command
+  const waLink = `https://wa.me/${TWILIO_NUMBER}?text=join%20${JOIN_WORD}`;
 
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 500); // delay 0.5s
+    const timer = setTimeout(() => setVisible(true), 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -27,48 +34,47 @@ const WhatsAppFloatingIcon: React.FC<WhatsAppFloatingIconProps> = ({ number }) =
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Tooltip */}
       {hovered && (
         <div
           style={{
             marginBottom: 8,
-            padding: '6px 12px',
-            backgroundColor: '#333',
+            padding: '8px 14px',
+            backgroundColor: '#1d1d1d',
             color: '#fff',
-            borderRadius: 4,
+            borderRadius: 8,
             fontSize: 14,
+            fontWeight: 500,
             whiteSpace: 'nowrap',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           }}
         >
-          Chat with our chatbot?
+          Chat with BOCRA Help Chat?
         </div>
       )}
 
-      {/* WhatsApp Icon */}
       <a
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
         style={{
-          width: 60,
-          height: 60,
+          width: 65,
+          height: 65,
           backgroundColor: '#25D366',
           borderRadius: '50%',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          boxShadow: '0 6px 16px rgba(0,0,0,0.25)',
           cursor: 'pointer',
-          transition: 'transform 0.2s',
+          transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.15) rotate(5deg)')}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1) rotate(0deg)')}
       >
         <img
           src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-          alt="Chat on WhatsApp"
-          style={{ width: 32, height: 32 }}
+          alt="BOCRA Chat"
+          style={{ width: 35, height: 35 }}
         />
       </a>
     </div>

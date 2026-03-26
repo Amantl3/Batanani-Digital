@@ -94,11 +94,6 @@ export default function RegisterPage() {
           <Link to="/">
             <img src="/bocra-logo-white.png" alt="BOCRA" className="h-10 w-auto" />
           </Link>
-          <div className="mt-3 flex items-center gap-1.5">
-            {['bg-bocra-teal','bg-bocra-green','bg-bocra-red','bg-bocra-gold'].map(c => (
-              <div key={c} className={`h-2 w-2 rounded-full ${c}`} />
-            ))}
-          </div>
         </div>
 
         <motion.div variants={stagger} initial="hidden" animate="show" className="relative">

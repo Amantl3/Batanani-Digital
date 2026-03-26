@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { motion, useInView } from 'framer-motion'
 import {
@@ -9,6 +10,7 @@ import {
   Users, FileText, AlertCircle, CheckCircle, Clock,
   TrendingUp, TrendingDown, Activity, RefreshCw, Download,
   Bell, ChevronRight, Eye, MoreHorizontal,
+  Check, X
 } from 'lucide-react'
 import { formatNumber, formatDate, formatRelative } from '@/utils/formatters'
 import { cn } from '@/utils/cn'
@@ -97,6 +99,26 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 export default function AdminDashboardPage() {
   const [isFetching, setIsFetching] = useState(false)
   const refresh = () => { setIsFetching(true); setTimeout(() => setIsFetching(false), 800) }
+
+  // Mock mutation for demonstration
+  // In a real app, you'd use: const { mutate } = useUpdateApplicationStatus()
+  const handleUpdateStatus = async (ref: string, status: 'approved' | 'rejected') => {
+    try {
+      setIsFetching(true)
+      // Simulate API call to update database
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      toast.success(`Application ${ref} has been ${status}. User notified.`, {
+        icon: status === 'approved' ? '✅' : '❌',
+      })
+      
+      // refresh() would usually trigger a React Query invalidation here
+    } catch (err) {
+      toast.error("Failed to update licence")
+    } finally {
+      setIsFetching(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -225,6 +247,7 @@ export default function AdminDashboardPage() {
               <div className="overflow-x-auto">
                 <table className="data-table">
                   <thead><tr><th>Reference</th><th>Company</th><th className="hidden md:table-cell">Type</th><th>Status</th><th>Action</th></tr></thead>
+                  <thead><tr><th>Reference</th><th>Company</th><th className="hidden md:table-cell">Type</th><th>Status</th><th className="text-right">Actions</th></tr></thead>
                   <tbody>
                     {RECENT_APPS.map(app => (
                       <tr key={app.ref}>
@@ -233,6 +256,23 @@ export default function AdminDashboardPage() {
                         <td className="hidden md:table-cell"><span className="badge badge-muted">{app.type}</span></td>
                         <td><span className={cn('badge', APP_STATUS_STYLE[app.status])}>{app.status.replace('_', ' ')}</span></td>
                         <td><Link to={`/admin/applications/${app.ref}`} className="flex items-center gap-1 text-xs font-semibold text-bocra-teal hover:underline"><Eye className="h-3 w-3" />Review</Link></td>
+                        <td>
+                          <div className="flex items-center justify-end gap-2">
+                            <button 
+                              onClick={() => handleUpdateStatus(app.ref, 'approved')}
+                              className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Approve">
+                              <Check className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleUpdateStatus(app.ref, 'rejected')}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Reject">
+                              <X className="h-4 w-4" />
+                            </button>
+                            <Link to={`/admin/applications/${app.ref}`} className="p-1.5 text-bocra-teal hover:bg-bocra-teal/5 rounded-lg transition-colors">
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

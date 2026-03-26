@@ -4,10 +4,12 @@ import authRoutes from './modules/auth/routes';
 import licenceRoutes from './modules/licences/routes';
 import complaintRoutes from './modules/complaints/routes';
 import analyticsRoutes from './modules/analytics/routes'; 
-// 1. IMPORT YOUR NEW DOCUMENT ROUTES HERE
 import documentRoutes from './modules/documents/routes'; 
 
 const app = express();
+
+// Handle preflight requests first
+app.options('*', cors());
 
 app.use(cors({
   origin: [
@@ -15,7 +17,7 @@ app.use(cors({
     'http://localhost:3001', 
     'http://localhost:5173', 
     'http://127.0.0.1:5173',
-    'https://batanani-digital-production.up.railway.app'
+    'https://batanani-digital-production.up.railway.app',
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -29,9 +31,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/licences', licenceRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/analytics', analyticsRoutes);
-
-// 2. CONNECT THE DOCUMENT ROUTES
-// This handles /api/documents AND /api/documents/seed automatically
 app.use('/api/documents', documentRoutes); 
 
 // Admin Redirects

@@ -28,7 +28,7 @@ export interface RegisterPayload {
 
 // ─── Licences ─────────────────────────────────────────────────────────────────
 export type LicenceCategory = 'telecom' | 'broadcast' | 'postal' | 'internet' | 'type_approval'
-export type LicenceStatus   = 'active'  | 'pending'   | 'suspended' | 'expired'
+export type LicenceStatus   = 'active'  | 'pending'   | 'suspended' | 'expired' | 'rejected'
 
 export interface Licence {
   id:            string

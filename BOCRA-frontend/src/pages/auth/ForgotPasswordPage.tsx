@@ -48,11 +48,6 @@ export default function ForgotPasswordPage() {
           <Link to="/" className="mb-8 inline-block">
             <img src="/bocra-logo-white.png" alt="BOCRA" className="mx-auto h-10 w-auto" />
           </Link>
-          <div className="mb-6 flex justify-center gap-1.5">
-            {['bg-bocra-teal','bg-bocra-green','bg-bocra-red','bg-bocra-gold'].map(c => (
-              <div key={c} className={`h-2.5 w-2.5 rounded-full ${c}`} />
-            ))}
-          </div>
           <motion.div variants={fadeUp}
             className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-bocra-teal/20">
             <ShieldCheck className="h-10 w-10 text-bocra-teal" />

@@ -1,6 +1,5 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import ReCAPTCHA from 'react-google-recaptcha'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -11,10 +10,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/utils/cn'
 
 const schema = z.object({
-  email:            z.string().email('Please enter a valid email address'),
-  password:         z.string().min(1, 'Password is required'),
-  totpCode:         z.string().optional(),
-  recaptchaToken:   z.string().optional(),
+  email:    z.string().email('Please enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
+  totpCode: z.string().optional(),
 })
 type FormData = z.infer<typeof schema>
 
@@ -35,36 +33,17 @@ export default function LoginPage() {
   const { login, isLoggingIn } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showMFA, setShowMFA] = useState(false)
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
-  const captchaRef = useRef<ReCAPTCHA>(null)
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   })
 
   const onSubmit = (data: FormData) => {
-    console.log('[LoginPage] Submitting login with email:', data.email)
-    console.log('[LoginPage] reCaptcha token:', captchaToken ? `${captchaToken.substring(0, 20)}...` : 'NULL')
-    
-    if (!captchaToken) {
-      console.error('[LoginPage] ❌ No reCaptcha token - cannot submit')
-      return
-    }
-    
-    // Add reCaptcha token to login credentials
-    const loginData = {
-      ...data,
-      recaptchaToken: captchaToken,
-    }
-    
-    console.log('[LoginPage] Sending login data with token')
-    
-    login(loginData, {
+    login(data, {
      onError: (err: { detail?: string }) => {
         if (err?.detail === 'Invalid credentials') {
-          console.warn('[LoginPage] Invalid credentials error')
+          // Handle invalid credentials
         } else if (err?.detail === 'MFA required') {
-          console.log('[LoginPage] MFA required')
           setShowMFA(true)
         }
       },
@@ -199,25 +178,9 @@ export default function LoginPage() {
                   </motion.div>
                 )}
 
-                {/* reCAPTCHA */}
-                <div className="flex justify-center">
-                  <ReCAPTCHA
-                    ref={captchaRef}
-                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY ?? ''}
-                    onChange={token => {
-                      console.log('[LoginPage] reCaptcha token received')
-                      setCaptchaToken(token)
-                    }}
-                    onExpired={() => {
-                      console.log('[LoginPage] reCaptcha token expired')
-                      setCaptchaToken(null)
-                    }}
-                  />
-                </div>
-
                 {/* Submit */}
-                <button type="submit" disabled={isLoggingIn || !captchaToken}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-bocra-navy py-3.5 text-sm font-bold text-white transition-all hover:bg-bocra-navy/90 hover:-translate-y-0.5 disabled:opacity-60 disabled:translate-y-0 disabled:cursor-not-allowed">
+                <button type="submit" disabled={isLoggingIn}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-bocra-navy py-3.5 text-sm font-bold text-white transition-all hover:bg-bocra-navy/90 hover:-translate-y-0.5 disabled:opacity-60 disabled:translate-y-0">
                   {isLoggingIn
                     ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Signing in…</>
                     : <>Sign in <ArrowRight className="h-4 w-4" /></>

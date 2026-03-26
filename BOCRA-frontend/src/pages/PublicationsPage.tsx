@@ -1,19 +1,21 @@
-import { useState, useRef, useEffect } from 'react' // Added useEffect
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Search, Download, ExternalLink, Calendar, Tag, BookOpen, ChevronRight, Filter, X, Loader2 } from 'lucide-react'
+import { motion, useInView } from 'framer-motion'
+import { Search, Download, ExternalLink, BookOpen, Loader2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
+// IMPORT THE API SERVICE HERE
+import api from '@/services/api' 
 
 type PubCategory = 'all' | 'consultation' | 'regulation' | 'report' | 'gazette' | 'advisory'
 
 interface Publication {
   id: string;
   title: string;
-  category: Omit<PubCategory, 'all'>;
-  publishedAt: string; // Match backend
-  fileSize: string;    // Match backend
+  category: string;
+  publishedAt: string;
+  fileSize: string;
   summary: string;
-  fileUrl: string;     // Match backend
+  fileUrl: string;
   featured?: boolean;
 }
 
@@ -35,13 +37,6 @@ const CAT_STYLE: Record<string, { color: string; bg: string }> = {
 }
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } } }
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } }
-
-function InView({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
-  return <motion.div ref={ref} variants={stagger} initial="hidden" animate={inView ? 'show' : 'hidden'} className={className}>{children}</motion.div>
-}
 
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<Publication[]>([])
@@ -49,21 +44,23 @@ export default function PublicationsPage() {
   const [search, setSearch] = useState('')
   const [active, setActive] = useState<PubCategory>('all')
 
-  // --- Fetch Data from Backend ---
+  // --- FIXED: Using 'api' service instead of 'fetch' ---
   useEffect(() => {
     async function fetchDocs() {
       try {
-        const res = await fetch('https://batanani-digital-production.up.railway.app/api/documents')
-        const json = await res.json()
-        setPublications(json.data || [])
-      } catch (err) {
-        console.error("Failed to load documents:", err)
+        setLoading(true);
+        // This request now automatically includes the Authorization header
+        const response = await api.get('/documents'); 
+        // Axios puts the response body in .data
+        setPublications(response.data.data || []);
+      } catch (err: any) {
+        console.error("Failed to load documents:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    fetchDocs()
-  }, [])
+    fetchDocs();
+  }, []);
 
   const filtered = publications.filter(p => {
     const matchCat  = active === 'all' || p.category === active
@@ -78,18 +75,9 @@ export default function PublicationsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Hero */}
       <section className="relative overflow-hidden bg-bocra-navy py-16">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-bocra-gold/10 via-transparent to-transparent" />
         <div className="container-page relative">
-          <nav className="breadcrumb mb-4">
-            <Link to="/" className="breadcrumb-link">Home</Link>
-            <span className="breadcrumb-sep">/</span>
-            <span className="text-white/60">Publications</span>
-          </nav>
           <h1 className="font-heading text-4xl font-bold text-white">Publications</h1>
-          <p className="mt-2 max-w-lg text-slate-400">Official reports, regulatory notices, and consultations.</p>
-
           <div className="mt-8 flex max-w-xl overflow-hidden rounded-xl bg-white shadow-card-lg">
             <div className="flex flex-1 items-center gap-3 px-5">
               <Search className="h-5 w-5 shrink-0 text-slate-400" />
@@ -102,7 +90,6 @@ export default function PublicationsPage() {
       </section>
 
       <div className="container-page py-8">
-        {/* Category filters */}
         <div className="mb-8 flex flex-wrap items-center gap-2">
           {CATEGORIES.map(c => (
             <button key={c.value} onClick={() => setActive(c.value)}
@@ -120,71 +107,29 @@ export default function PublicationsPage() {
             <Loader2 className="h-8 w-8 animate-spin text-bocra-teal" />
           </div>
         ) : (
-          <>
-            {/* Featured */}
-            {featured.length > 0 && (
-              <InView className="mb-12">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Featured</p>
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {featured.map(pub => {
-                    const style = CAT_STYLE[pub.category as string] ?? CAT_STYLE.report
-                    return (
-                      <motion.article key={pub.id} variants={fadeUp} className="rounded-2xl border bg-white p-6 shadow-card hover:shadow-card-lg transition-all">
-                        <div className="mb-4 flex items-center justify-between">
-                           <span className={cn('px-3 py-1 rounded-full text-xs font-bold', style.bg, style.color)}>{pub.category}</span>
-                           <span className="text-xs text-slate-400">{fmtDate(pub.publishedAt)}</span>
-                        </div>
-                        <h2 className="text-xl font-bold mb-2">{pub.title}</h2>
-                        <p className="text-sm text-slate-500 mb-6">{pub.summary}</p>
-                        <div className="flex items-center justify-between pt-4 border-t">
-                          <span className="text-xs text-slate-400">{pub.fileSize}</span>
-                          <div className="flex gap-4">
-                            <a href={pub.fileUrl} target="_blank" rel="noreferrer" className={cn("text-xs font-bold flex items-center gap-1", style.color)}>
-                              <ExternalLink className="h-3 w-3" /> View
-                            </a>
-                            <a href={pub.fileUrl} download className={cn("text-xs font-bold flex items-center gap-1", style.color)}>
-                              <Download className="h-3 w-3" /> Download
-                            </a>
-                          </div>
-                        </div>
-                      </motion.article>
-                    )
-                  })}
-                </div>
-              </InView>
-            )}
-
-            {/* List View for the rest */}
-            <div className="space-y-4">
-              {rest.map(pub => {
-                const style = CAT_STYLE[pub.category as string] ?? CAT_STYLE.report
-                return (
-                  <motion.article key={pub.id} variants={fadeUp} className="flex items-center justify-between p-4 bg-white border rounded-xl hover:shadow-md transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className={cn("p-2 rounded-lg", style.bg)}>
-                        <BookOpen className={cn("h-5 w-5", style.color)} />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900">{pub.title}</h3>
-                        <p className="text-xs text-slate-500">{pub.fileSize} • {fmtDate(pub.publishedAt)}</p>
-                      </div>
+          <div className="space-y-4">
+            {filtered.map(pub => {
+              const style = CAT_STYLE[pub.category] ?? CAT_STYLE.report
+              return (
+                <motion.article key={pub.id} variants={fadeUp} initial="hidden" animate="show" className="flex items-center justify-between p-4 bg-white border rounded-xl hover:shadow-md transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className={cn("p-2 rounded-lg", style.bg)}>
+                      <BookOpen className={cn("h-5 w-5", style.color)} />
                     </div>
-                    <div className="flex gap-2">
-                      <a href={pub.fileUrl} target="_blank" rel="noreferrer" className="p-2 hover:bg-slate-100 rounded-lg"><ExternalLink className="h-4 w-4 text-slate-400" /></a>
-                      <a href={pub.fileUrl} download className="p-2 hover:bg-slate-100 rounded-lg"><Download className="h-4 w-4 text-slate-400" /></a>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">{pub.title}</h3>
+                      <p className="text-xs text-slate-500">{pub.fileSize} • {fmtDate(pub.publishedAt)}</p>
                     </div>
-                  </motion.article>
-                )
-              })}
-            </div>
-
-            {filtered.length === 0 && (
-              <div className="text-center py-20">
-                <Search className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-                <p className="text-slate-500">No documents found matching your criteria.</p>
-              </div>
-            )}
-          </>
+                  </div>
+                  <div className="flex gap-2">
+                    <a href={pub.fileUrl} target="_blank" rel="noreferrer" className="p-2 hover:bg-slate-100 rounded-lg"><ExternalLink className="h-4 w-4 text-slate-400" /></a>
+                    <a href={pub.fileUrl} download className="p-2 hover:bg-slate-100 rounded-lg"><Download className="h-4 w-4 text-slate-400" /></a>
+                  </div>
+                </motion.article>
+              )
+            })}
+            {filtered.length === 0 && <p className="text-center py-10 text-slate-500">No documents found.</p>}
+          </div>
         )}
       </div>
     </div>

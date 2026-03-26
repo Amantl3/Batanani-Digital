@@ -11,7 +11,7 @@ import {
   getExpiringSoonLicences,
 } from './service'
 
-const DEMO_USER_ID = 'demo-user'
+const DEMO_USER_ID = null
 
 function mapLicence(lic: any) {
   return {
@@ -67,12 +67,12 @@ export const licenceStats = async (_req: Request, res: Response) => {
     res.json({
       success: true,
       data: {
-        activeLicences:          data.total || 0,
-        activeLicencesDelta:     5,
-        complaintsYTD:           12,
-        complaintsYTDDelta:      -2,
-        mobileSubscribers:       2841,
-        mobileSubscribersDelta:  156,
+        activeLicences:         data.total || 0,
+        activeLicencesDelta:    5,
+        complaintsYTD:          12,
+        complaintsYTDDelta:     -2,
+        mobileSubscribers:      2841,
+        mobileSubscribersDelta: 156,
       },
     })
   } catch (error: any) {
@@ -83,7 +83,7 @@ export const licenceStats = async (_req: Request, res: Response) => {
 export const myApplications = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id ?? DEMO_USER_ID
-    const data = await getAllLicences({ userId, page: 1, limit: 50 })
+    const data = await getAllLicences({ userId: userId ?? undefined, page: 1, limit: 50 })
     res.json({ success: true, data: data.results.map(mapLicence) })
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message })
@@ -103,7 +103,6 @@ export const applyForLicence = async (req: Request, res: Response) => {
   try {
     const { type, category, companyName } = req.body
     const licenceType = type || category
-    // Use authenticated user if available, fall back to demo user
     const userId = (req as any).user?.id ?? DEMO_USER_ID
     if (!licenceType || !companyName) {
       return res.status(400).json({ success: false, error: 'type and companyName are required' })

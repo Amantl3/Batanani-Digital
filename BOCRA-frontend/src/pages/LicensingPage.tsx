@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import {
@@ -123,6 +123,18 @@ export default function LicensingPage() {
   const applyFilters = useCallback(() => { setFilters(draft); setPage(1) }, [draft])
   const clearFilters = () => { const e = { q: '', category: '', status: '' }; setDraft(e); setFilters(e); setPage(1) }
   const hasFilters = filters.q || filters.category || filters.status
+
+  // Live search effect with 400ms debounce to prevent excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (draft.q !== filters.q) {
+        setFilters(f => ({ ...f, q: draft.q }))
+        setPage(1)
+      }
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [draft.q, filters.q])
+
   const total = data?.total ?? 0; const totalPages = data?.totalPages ?? 1
   const from = (page - 1) * PAGE_SIZE + 1; const to = Math.min(page * PAGE_SIZE, total)
 

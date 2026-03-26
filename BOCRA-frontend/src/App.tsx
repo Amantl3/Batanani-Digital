@@ -26,6 +26,8 @@ const PaymentHistoryPage     = lazy(() => import('@pages/portal/PaymentHistoryPa
 const ComplaintsMapPage      = lazy(() => import('@pages/ComplaintsMapPage'))
 const ContactPage            = lazy(() => import('@pages/ContactPage'))
 const SitemapPage            = lazy(() => import('@pages/SitemapPage'))
+const AccessibilityPage      = lazy(() => import('@pages/AccessibilityPage'))
+const TermsOfUsePage         = lazy(() => import('@pages/TermsOfUsePage'))
 
 const AdminDashboardPage     = lazy(() => import('@pages/admin/AdminDashboardPage'))
 const AdminApplicationsPage  = lazy(() => import('@pages/admin/AdminApplicationsPage'))
@@ -62,6 +64,8 @@ export default function App() {
             <Route path="/map"                   element={<ComplaintsMapPage />} />
             <Route path="/contact"               element={<ContactPage />} />
             <Route path="/sitemap"               element={<SitemapPage />} />
+            <Route path="/accessibility"         element={<AccessibilityPage />} />
+            <Route path="/terms-of-use"          element={<TermsOfUsePage />} />
           </Route>
 
           {/* ── Protected user portal pages ────────────── */}

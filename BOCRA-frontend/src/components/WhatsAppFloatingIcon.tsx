@@ -26,7 +26,7 @@ const WhatsAppFloatingIcon: React.FC<WhatsAppFloatingIconProps> = () => {
       style={{
         position: 'fixed',
         bottom: 20,
-        left: 20,
+        right: 20, // icon on bottom-right
         zIndex: 1000,
         transform: visible ? 'translateY(0)' : 'translateY(100px)',
         transition: 'transform 0.5s ease-out',
@@ -34,10 +34,14 @@ const WhatsAppFloatingIcon: React.FC<WhatsAppFloatingIconProps> = () => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
+      {/* Tooltip */}
       {hovered && (
         <div
           style={{
-            marginBottom: 8,
+            position: 'absolute',
+            right: '100%', // show to the left of the icon
+            bottom: 0,
+            marginRight: 8,
             padding: '8px 14px',
             backgroundColor: '#1d1d1d',
             color: '#fff',
@@ -49,9 +53,24 @@ const WhatsAppFloatingIcon: React.FC<WhatsAppFloatingIconProps> = () => {
           }}
         >
           Chat with BOCRA Help Chat?
+          {/* Arrow pointing to icon */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              right: -6, // slightly outside tooltip
+              transform: 'translateY(-50%)',
+              width: 0,
+              height: 0,
+              borderTop: '6px solid transparent',
+              borderBottom: '6px solid transparent',
+              borderLeft: '6px solid #1d1d1d',
+            }}
+          />
         </div>
       )}
 
+      {/* WhatsApp Icon */}
       <a
         href={waLink}
         target="_blank"

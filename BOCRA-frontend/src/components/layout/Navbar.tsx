@@ -35,6 +35,7 @@ const NAV = [
   { label: 'Analytics Map', path: '/map', requiresAuth: true, requiresAdmin: true },
   { label: 'Contact', path: '/contact', requiresAuth: false },
 ]
+
 export default function Navbar() {
   const { t } = useTranslation()
   const { user, isAuthenticated, logout } = useAuth()

@@ -10,13 +10,13 @@ import { protect } from '../../middleware/auth'
 
 const router = Router()
 
-// Public - No 'protect' here so dashboard loads immediately
+// Public
 router.get('/stats', licenceStats)
 router.get('/',      listLicences)
 router.get('/:id',   getLicenceById)
 
-// Protected - Require login
-router.post('/',            protect, applyForLicence)
+// Temporarily unprotected for demo
+router.post('/',            applyForLicence)
 router.patch('/:id/status', protect, updateStatus)
 
 export default router

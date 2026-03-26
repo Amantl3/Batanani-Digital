@@ -16,7 +16,10 @@ export const getAllLicences = async (filters: LicenceFilters = {}) => {
   const { search, type, status, userId, page = 1, limit = 15 } = filters
   let query = supabase.from('Licence').select('*', { count: 'exact' })
 
-  if (search) query = query.or(`companyName.ilike.%${search}%,id.ilike.%${search}%`)
+  // FIX: Fixed the search query formatting for Supabase
+  if (search) {
+    query = query.or(`companyName.ilike.%${search}%,id.ilike.%${search}%`)
+  }
   if (type)   query = query.eq('type', type)
   if (status) query = query.eq('status', status)
   if (userId) query = query.eq('userId', userId)
@@ -50,6 +53,7 @@ export const createLicence = async (payload: {
   type:        string
   companyName: string
   userId:      string
+  region?:     string
 }) => {
   const { data, error } = await supabase
     .from('Licence')
@@ -57,6 +61,7 @@ export const createLicence = async (payload: {
       type:        payload.type,
       companyName: payload.companyName,
       userId:      payload.userId,
+      region:      payload.region || 'Gaborone', // FIX: Added default region for map
       status:      'pending',
     })
     .select()

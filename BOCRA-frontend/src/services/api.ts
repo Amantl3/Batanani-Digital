@@ -1,19 +1,19 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://batanani-digital-production.up.railway.app/api',
+  // We use 8080 because your backend index.ts is set to 8080
+  baseURL: 'http://localhost:8080/api', 
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // This will help you see if Railway is down vs if the route is missing
-    console.error("API Error:", error.response?.status, error.config?.url);
-    return Promise.reject(error);
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
 export default api;

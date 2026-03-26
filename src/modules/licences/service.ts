@@ -45,10 +45,9 @@ export const getLicence = async (id: string) => {
 }
 
 export const createLicence = async (payload: {
-  type:         string
-  companyName:  string
-  userId?:      string | null
-  region?:      string
+  type:        string
+  companyName: string
+  userId?:     string | null
 }) => {
   const { data, error } = await supabase
     .from('Licence')
@@ -56,7 +55,6 @@ export const createLicence = async (payload: {
       type:        payload.type,
       companyName: payload.companyName,
       userId:      payload.userId ?? null,
-      region:      payload.region || 'Gaborone',
       status:      'pending',
     })
     .select()

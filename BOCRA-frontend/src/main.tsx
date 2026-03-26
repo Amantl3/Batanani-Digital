@@ -10,13 +10,10 @@ import './index.css'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime:          1000 * 60 * 5,  // 5 min
-      gcTime:             1000 * 60 * 10, // 10 min
-      retry:              2,
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
+      retry: 2,
       refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: 1,
     },
   },
 })
@@ -25,7 +22,8 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      {/* Fixed: Use a string check for environment to avoid TS errors */}
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   </StrictMode>
 )

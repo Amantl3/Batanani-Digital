@@ -1,81 +1,69 @@
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
 
-type RegionData = {
-  region: string;
-  complaints: number;
-  trend?: string;
-  color?: string;
-};
+// Coordinates for major Botswana regions
+const REGION_COORDS: Record<string, [number, number]> = {
+  'Gaborone': [-24.6282, 25.9231],
+  'Francistown': [-21.1661, 27.5144],
+  'Maun': [-19.9833, 23.4167],
+  'Kanye': [-24.9667, 25.3333],
+  'Molepolole': [-24.4167, 25.5333],
+  'Serowe': [-22.3833, 26.7167],
+  'Kasane': [-17.8167, 25.1500],
+  'Ghanzi': [-21.5667, 21.7833],
+}
 
-const regionCoords: Record<string, { lat: number; lng: number }> = {
-  Gaborone:    { lat: -24.6282, lng: 25.9231 },
-  Francistown: { lat: -21.17,   lng: 27.507  },
-  Maun:        { lat: -19.9833, lng: 23.4167 },
-  Serowe:      { lat: -22.3833, lng: 26.7167 },
-  Kanye:       { lat: -24.9833, lng: 25.35   },
-  Mochudi:     { lat: -24.4167, lng: 26.15   },
-};
+interface MapProps {
+  // Added 'id' or fallback to ensure unique keys
+  data: { id?: string; region: string; complaints: number }[]
+}
 
-const botswanaBounds: [[number, number], [number, number]] = [
-  [-27.0, 19.0],
-  [-17.5, 30.0],
-];
-
-export default function ComplaintsMap({
-  data,
-  onRegionSelect,
-}: {
-  data: RegionData[];
-  onRegionSelect?: (region: string) => void;
-}) {
-  if (data.length === 0) return null;
-
-  const maxComplaints = Math.max(...data.map(d => d.complaints));
+export default function ComplaintsMap({ data }: MapProps) {
+  const center: [number, number] = [-22.3285, 24.6849]
 
   return (
-    <div>
-      <MapContainer
-        center={[-22.3285, 24.6849]}
-        zoom={6}
-        style={{ height: '500px', width: '100%', borderRadius: '12px', overflow: 'hidden' }}
-        maxBounds={botswanaBounds}
-        maxBoundsViscosity={0.8}
-      >
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
-        />
-
-        {data.map((item, i) => {
-          const coords = regionCoords[item.region];
-          if (!coords) return null;
-
-          const radius = (item.complaints / maxComplaints) * 25 + 5;
-          const color = item.color ?? `hsl(${120 - (item.complaints / maxComplaints) * 120}, 100%, 50%)`;
-
-          return (
-            <CircleMarker
-              key={i}
-              center={[coords.lat, coords.lng]}
-              radius={radius}
-              pathOptions={{ color, fillColor: color, fillOpacity: 0.4, weight: 1 }}
-              eventHandlers={{
-                click: () => onRegionSelect?.(item.region),
-              }}
-            >
-              <Popup className="rounded-lg p-2 shadow-lg bg-white text-gray-800 font-medium">
-                {item.region}: {item.complaints} complaints
-              </Popup>
-            </CircleMarker>
-          );
-        })}
-      </MapContainer>
-
-      <div className="flex items-center gap-2 mt-4 text-sm">
-        <div className="h-3 w-32 rounded-full bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
-        <span className="text-gray-700">Low → High complaints</span>
-      </div>
-    </div>
-  );
+    <MapContainer 
+      center={center} 
+      zoom={6} 
+      className="h-full w-full z-0 rounded-xl overflow-hidden"
+      scrollWheelZoom={false}
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      
+      {data.map((item, index) => {
+        const coords = REGION_COORDS[item.region] || REGION_COORDS['Gaborone']
+        
+        // FIX: Use item.id if available, otherwise combine region + index to guarantee uniqueness
+        const uniqueKey = item.id || `${item.region}-${index}`;
+        
+        return (
+          <CircleMarker
+            key={uniqueKey}
+            center={coords}
+            radius={Math.max(10, Math.min(item.complaints * 5, 40))} // Ensure a minimum visible size
+            pathOptions={{
+              fillColor: '#ef4444',
+              color: '#b91c1c',
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.6,
+            }}
+          >
+            <Tooltip permanent direction="top" offset={[0, -10]} className="bg-transparent border-none shadow-none font-bold text-red-700">
+              {item.complaints}
+            </Tooltip>
+            <Popup>
+              <div className="p-1">
+                <h4 className="font-bold text-slate-900">{item.region}</h4>
+                <p className="text-sm text-slate-600">{item.complaints} Active Complaints</p>
+              </div>
+            </Popup>
+          </CircleMarker>
+        )
+      })}
+    </MapContainer>
+  )
 }

@@ -5,11 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 
 import * as licenceService from '@/services/licences'
-import type { ApplyPayload } from '@/services/licences'
-
-interface LicenceFilters {
-  [key: string]: unknown
-}
+import type { LicenceFilters, ApplyPayload } from '@/services/licences'
 
 export function useLicences(filters: LicenceFilters = {}) {
   return useQuery({

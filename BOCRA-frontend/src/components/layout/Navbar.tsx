@@ -32,8 +32,7 @@ const NAV = [
   { label: 'Publications', path: '/publications', showFor: ['guest', 'user'] },
   { label: 'Dashboard', path: '/admin/dashboard', showFor: ['admin'] },
   { label: 'My Portal', path: '/portal', showFor: ['user'] },
-  { label: 'Analytics Map', path: '/map', showFor: ['admin'] },
-  { label: 'Contact', path: '/contact', showFor: ['guest', 'user'] },
+{ label: 'Analytics Map', path: '/admin/map', showFor: ['admin'] },  { label: 'Contact', path: '/contact', showFor: ['guest', 'user'] },
 ]
 export default function Navbar() {
   const { t } = useTranslation()

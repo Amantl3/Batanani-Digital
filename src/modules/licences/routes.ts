@@ -15,7 +15,7 @@ router.get('/stats', licenceStats)
 router.get('/',      listLicences)
 router.get('/:id',   getLicenceById)
 
-// Temporarily unprotected for demo
+// Unprotected for demo
 router.post('/',            applyForLicence)
 router.patch('/:id/status', protect, updateStatus)
 

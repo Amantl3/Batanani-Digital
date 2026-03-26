@@ -11,8 +11,6 @@ import {
   getExpiringSoonLicences,
 } from './service'
 
-const DEMO_USER_ID = null
-
 function mapLicence(lic: any) {
   return {
     id:            lic.id,
@@ -82,8 +80,8 @@ export const licenceStats = async (_req: Request, res: Response) => {
 
 export const myApplications = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id ?? DEMO_USER_ID
-    const data = await getAllLicences({ userId: userId ?? undefined, page: 1, limit: 50 })
+    const userId = (req as any).user?.id ?? undefined
+    const data = await getAllLicences({ userId, page: 1, limit: 50 })
     res.json({ success: true, data: data.results.map(mapLicence) })
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message })
@@ -102,8 +100,9 @@ export const getLicenceById = async (req: Request, res: Response) => {
 export const applyForLicence = async (req: Request, res: Response) => {
   try {
     const { type, category, companyName } = req.body
+    console.log('BODY RECEIVED:', req.body)
     const licenceType = type || category
-    const userId = (req as any).user?.id ?? DEMO_USER_ID
+    const userId = (req as any).user?.id ?? null
     if (!licenceType || !companyName) {
       return res.status(400).json({ success: false, error: 'type and companyName are required' })
     }
@@ -111,6 +110,7 @@ export const applyForLicence = async (req: Request, res: Response) => {
     const mapped = mapLicence(data)
     res.status(201).json({ success: true, data: mapped, reference: mapped.id })
   } catch (error: any) {
+    console.error('LICENCE CREATE ERROR:', error.message)
     res.status(500).json({ success: false, error: error.message })
   }
 }

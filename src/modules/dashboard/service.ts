@@ -4,7 +4,7 @@ import { supabase } from "../../config/supabase";
 export const getDashboardStats = async () => {
   const [
     { count: totalComplaints },
-    { count: openComplaints },
+    { count: activeComplaints }, // Count: open + pending + in_progress
     { count: resolvedComplaints },
     { count: totalLicences },
     { count: pendingLicences },
@@ -14,11 +14,14 @@ export const getDashboardStats = async () => {
     { data: recentLicences },
   ] = await Promise.all([
     supabase.from("Complaint").select("*", { count: "exact", head: true }),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "open"),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "resolved"),
+    // Fix: Using .or with .ilike to catch all active states regardless of case
+    supabase.from("Complaint")
+      .select("*", { count: "exact", head: true })
+      .or('status.ilike.open,status.ilike.pending,status.ilike.in_progress,status.ilike.new'),
+    supabase.from("Complaint").select("*", { count: "exact", head: true }).ilike("status", "resolved"),
     supabase.from("Licence").select("*", { count: "exact", head: true }),
-    supabase.from("Licence").select("*", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("Licence").select("*", { count: "exact", head: true }).eq("status", "approved"),
+    supabase.from("Licence").select("*", { count: "exact", head: true }).ilike("status", "pending"),
+    supabase.from("Licence").select("*", { count: "exact", head: true }).ilike("status", "approved"),
     supabase.from("Notification").select("*", { count: "exact", head: true }).eq("read", false),
     supabase.from("Complaint").select("*").order("createdAt", { ascending: false }).limit(5),
     supabase.from("Licence").select("*").order("createdAt", { ascending: false }).limit(5),
@@ -27,7 +30,7 @@ export const getDashboardStats = async () => {
   return {
     complaints: {
       total: totalComplaints ?? 0,
-      open: openComplaints ?? 0,
+      open: activeComplaints ?? 0,
       resolved: resolvedComplaints ?? 0,
     },
     licences: {
@@ -64,12 +67,12 @@ export const getDashboardSummary = async () => {
     { count: resolvedComplaints },
     { count: unreadNotifications },
   ] = await Promise.all([
-    supabase.from("Licence").select("*", { count: "exact", head: true }).eq("status", "approved"),
+    supabase.from("Licence").select("*", { count: "exact", head: true }).ilike("status", "approved"),
     supabase.from("Licence").select("*", { count: "exact", head: true }).gte("createdAt", quarterStart),
     supabase.from("Complaint").select("*", { count: "exact", head: true }).gte("createdAt", yearStart),
     supabase.from("Complaint").select("*", { count: "exact", head: true }).gte("createdAt", prevYearStart).lte("createdAt", prevYearEnd),
     supabase.from("Complaint").select("*", { count: "exact", head: true }),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "resolved"),
+    supabase.from("Complaint").select("*", { count: "exact", head: true }).ilike("status", "resolved"),
     supabase.from("Notification").select("*", { count: "exact", head: true }).eq("read", false),
   ]);
 
@@ -191,12 +194,12 @@ export const getComplaintResolutionRate = async () => {
     { count: resolvedRecent },
   ] = await Promise.all([
     supabase.from("Complaint").select("*", { count: "exact", head: true }),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "resolved"),
-    supabase.from("Complaint").select("*", { count: "exact", head: true }).eq("status", "escalated"),
+    supabase.from("Complaint").select("*", { count: "exact", head: true }).ilike("status", "resolved"),
+    supabase.from("Complaint").select("*", { count: "exact", head: true }).ilike("status", "escalated"),
     supabase
       .from("Complaint")
       .select("*", { count: "exact", head: true })
-      .eq("status", "resolved")
+      .ilike("status", "resolved")
       .gte("createdAt", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
   ]);
 
@@ -269,7 +272,6 @@ export const getDailyComplaintsLast7Days = async () => {
 
   if (error) throw new Error(error.message);
 
-  // Build all 7 days with 0 as default
   const days: Record<string, number> = {};
   for (let i = 6; i >= 0; i--) {
     const date = new Date();
@@ -282,7 +284,6 @@ export const getDailyComplaintsLast7Days = async () => {
     days[key] = 0;
   }
 
-  // Fill in real counts
   for (const item of data ?? []) {
     const key = new Date(item.createdAt).toLocaleDateString("en-GB", {
       weekday: "short",
@@ -302,7 +303,7 @@ export const getResolutionTime = async () => {
   const { data, error } = await supabase
     .from("Complaint")
     .select("createdAt, status")
-    .eq("status", "resolved");
+    .ilike("status", "resolved");
 
   if (error) throw new Error(error.message);
 
@@ -341,9 +342,9 @@ export const getLicenceApprovalRate = async () => {
     { count: rejected },
   ] = await Promise.all([
     supabase.from("Licence").select("*", { count: "exact", head: true }),
-    supabase.from("Licence").select("*", { count: "exact", head: true }).eq("status", "approved"),
-    supabase.from("Licence").select("*", { count: "exact", head: true }).eq("status", "pending"),
-    supabase.from("Licence").select("*", { count: "exact", head: true }).eq("status", "rejected"),
+    supabase.from("Licence").select("*", { count: "exact", head: true }).ilike("status", "approved"),
+    supabase.from("Licence").select("*", { count: "exact", head: true }).ilike("status", "pending"),
+    supabase.from("Licence").select("*", { count: "exact", head: true }).ilike("status", "rejected"),
   ]);
 
   const totalCount = total ?? 0;
@@ -387,7 +388,7 @@ export const getExpiringLicences = async () => {
   const { data, error } = await supabase
     .from("Licence")
     .select("*")
-    .eq("status", "approved");
+    .ilike("status", "approved");
 
   if (error) throw new Error(error.message);
 
@@ -431,7 +432,7 @@ export const searchComplaints = async (filters: {
     query = query.ilike("category", `%${filters.category}%`);
   }
   if (filters.status) {
-    query = query.eq("status", filters.status);
+    query = query.ilike("status", filters.status);
   }
 
   const { data, error } = await query.order("createdAt", { ascending: false });

@@ -51,9 +51,10 @@ export default function PortalPage() {
 
   // Safe data extraction – prevents "filter is not a function" error
   const appList: Licence[] = useMemo(() => {
-    if (Array.isArray(applicationsPage)) return applicationsPage
-    if (Array.isArray(applicationsPage?.data)) return applicationsPage.data
-    if (Array.isArray(applicationsPage?.applications)) return applicationsPage.applications
+    const page = applicationsPage as any
+    if (Array.isArray(page)) return page
+    if (Array.isArray(page?.data)) return page.data
+    if (Array.isArray(page?.applications)) return page.applications
     return []
   }, [applicationsPage])
 
@@ -64,9 +65,9 @@ export default function PortalPage() {
   const roleInfo = ROLE_LABELS[role] ?? ROLE_LABELS.public
 
   // Stats (safe)
-  const activeLicences = appList.filter(a => a.status === 'active' || a.status === 'approved').length
+  const activeLicences = appList.filter(a => (a.status as string) === 'active' || (a.status as string) === 'approved').length
   const pendingApps = appList.filter(a => 
-    a.status === 'pending' || a.status === 'submitted' || a.status === 'under_review'
+    (a.status as string) === 'pending' || (a.status as string) === 'submitted' || (a.status as string) === 'under_review'
   ).length
 
   return (
@@ -362,7 +363,7 @@ export default function PortalPage() {
                         </td>
                       </tr>
                     ) : (
-                      appList.map((app) => (
+                      appList.map((app: any) => (
                         <tr key={app.id} className="hover:bg-slate-50">
                           <td className="font-mono text-xs font-semibold text-bocra-blue">
                             {app.licenceNumber ?? app.reference ?? app.id}

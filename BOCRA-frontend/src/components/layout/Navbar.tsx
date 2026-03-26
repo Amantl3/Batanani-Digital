@@ -24,6 +24,15 @@ import { useUIStore } from '@/store/uiStore'
 import { cn } from '@/utils/cn'
 import { formatRelative } from '@/utils/formatters'
 
+type Notification = {
+  id: string
+  title: string
+  body: string
+  read: boolean
+  createdAt: string
+  link?: string
+  urgent?: boolean
+}
 // Nav links defined locally
 const NAV = [
   { label: 'Home', path: '/', showFor: ['guest', 'user', 'admin'] },
@@ -44,17 +53,18 @@ export default function Navbar() {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
 
   const isAdmin = user?.role === 'admin'
-const { data, isLoading: notificationsLoading } = useNotifications()
-
-const notifications = Array.isArray(data)
+const { data, isLoading: notificationsLoading } = useNotifications() as {
+  data: Notification[] | { notifications: Notification[] } | undefined
+  isLoading: boolean
+}
+const notifications: Notification[] = Array.isArray(data)
   ? data
-  : Array.isArray(data?.notifications)
-  ? data.notifications
+  : Array.isArray((data as any)?.notifications)
+  ? (data as any).notifications
   : []
   const markNotificationRead = useMarkNotificationRead()
   const markAllNotificationsRead = useMarkAllNotificationsRead()
-  const unreadNotifications = notifications.filter((notification) => !notification.read)
-
+  const unreadNotifications = notifications.filter((notification: Notification) => !notification.read)
  // Determine the current role
 const userRole = isAuthenticated ? (isAdmin ? 'admin' : 'user') : 'guest'
 
@@ -208,9 +218,9 @@ const initials =
                               No new notifications at the moment
                             </div>
                           ) : (
-                            notifications.map((notification) => (
-                              <button
-                                key={notification.id}
+                           notifications.map((notification: Notification) => (
+                        <button                           
+                             key={notification.id}
                                 type="button"
                                 onClick={() => {
                                   if (!notification.read) {

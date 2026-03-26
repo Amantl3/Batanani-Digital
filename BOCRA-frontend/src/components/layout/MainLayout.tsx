@@ -1,11 +1,16 @@
 // src/layouts/MainLayout.tsx
+import { ReactNode } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import AlertBanner from '@components/shared/AlertBanner';
 import WhatsAppFloatingIcon from '@components/WhatsAppFloatingIcon';
 
-export default function MainLayout() {
+interface MainLayoutProps {
+  children?: ReactNode;
+}
+
+export default function MainLayout({ children }: MainLayoutProps) {
   const { pathname } = useLocation();
   const showLayoutFooter = pathname !== '/';
 
@@ -17,7 +22,7 @@ export default function MainLayout() {
       <AlertBanner />
       <Navbar />
       <main className="flex-1">
-        <Outlet />
+        {children || <Outlet />}
       </main>
       {showLayoutFooter && <Footer />}
 

@@ -1,13 +1,14 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // We use 8080 because your backend index.ts is set to 8080
-  baseURL: 'http://localhost:8080/api', 
+  // Direct link to your LIVE Railway backend
+  baseURL: 'https://batanani-digital-production.up.railway.app/api', 
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+// This attaches your login token to every request automatically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token && config.headers) {

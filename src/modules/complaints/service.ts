@@ -29,14 +29,13 @@ export const getAllComplaints = async (filters: ComplaintFilters = {}) => {
 }
 
 export const createComplaint = async (payload: any) => {
-  // Only pick columns that exist in the Complaint table
   const insert = {
-    userId:            payload.userId            ?? null,
-    category:          payload.category          ?? null,
-    description:       payload.description       ?? null,
-    providerLicenceId: payload.providerLicenceId ?? null,
-    contact:           payload.contact           ?? null,
-    status:            'pending',
+    userId:      payload.userId                        ?? null,
+    category:    payload.category                      ?? null,
+    description: payload.description                   ?? null,
+    provider:    payload.providerLicenceId || payload.provider || null,
+    region:      payload.region                        ?? 'Gaborone',
+    status:      'pending',
   }
   const { data, error } = await supabase
     .from('Complaint')

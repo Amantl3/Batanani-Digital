@@ -122,11 +122,81 @@ export default function AdminDashboardPage() {
     staleTime: 1000 * 60 * 2,
   })
 
+  const { data: allPublications = [] } = useQuery({
+    queryKey: ['admin', 'publications', 'all'],
+    queryFn: async () => {
+      const result = await adminService.getAllDocuments()
+      return Array.isArray(result.data) ? result.data : (result || [])
+    },
+    placeholderData: [],
+    staleTime: 1000 * 60 * 2,
+  })
+
+  const { data: allUsers } = useQuery({
+    queryKey: ['admin', 'users', 'all'],
+    queryFn: async () => {
+      try {
+        const result = await adminService.getAllUsers()
+        if (Array.isArray(result.data)) return result.data
+        if (typeof result.total === 'number') return result
+        return []
+      } catch {
+        return []
+      }
+    },
+    placeholderData: [],
+    staleTime: 1000 * 60 * 5,
+  })
+
+  const { data: monthlyApplications } = useQuery({
+    queryKey: ['analytics', 'monthlyApplications'],
+    queryFn: () => analyticsService.getMonthlyApplications(),
+    placeholderData: MONTHLY_APPS.map(item => ({ month: item.month, count: item.applications })),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  })
+
+  const { data: licencesBySectorData } = useQuery({
+    queryKey: ['analytics', 'licencesBySector'],
+    queryFn: () => analyticsService.getLicencesBySector(),
+    placeholderData: SECTOR_PIE.map(item => ({ sector: item.name.toLowerCase(), count: item.value, pct: 0 })),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  })
+
+  const { data: complaintsByCategory } = useQuery({
+    queryKey: ['analytics', 'complaintsByCategory'],
+    queryFn: () => analyticsService.getComplaintsByCategory(),
+    placeholderData: [
+      { category: 'billing', count: 30 },
+      { category: 'coverage', count: 22 },
+      { category: 'quality', count: 18 },
+      { category: 'data', count: 12 },
+      { category: 'fraud', count: 7 },
+      { category: 'other', count: 5 },
+    ],
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  })
+
+  const totalLicences = Number(allApps?.total ?? 0)
+  const pendingLicences = (Array.isArray(allApps?.data) ? allApps.data.filter((a: any) => a.status === 'pending').length : 0)
+  const totalComplaints = Number(allComplaints?.total ?? 0)
+  const totalPublications = Array.isArray(allPublications) ? allPublications.length : 0
+  const usersCount = Array.isArray(allUsers) ? allUsers.length : Number((allUsers as any)?.total ?? (kpis?.mobileSubscribers ?? 0))
+
   const kpiCards = [
-    { label: 'Total licences',       value: kpis?.activeLicences     ?? 0, delta: kpis?.activeLicencesDelta  ?? 0, icon: FileText,    color: 'bocra-teal'  },
-    { label: 'Total complaints',     value: allComplaints?.total   ?? kpis?.complaintsYTD ?? 0, delta: kpis?.complaintsYTDDelta ?? 0, icon: AlertCircle, color: 'bocra-red'   },
-    { label: 'Total applications',   value: allApps?.total         ?? (recentApps?.total ?? 0), delta: 0, icon: Clock,      color: 'bocra-gold'  },
-    { label: 'Registered users',     value: kpis?.mobileSubscribers  ?? 0, delta: kpis?.mobileSubscribersDelta??0, icon: Users,       color: 'bocra-green' },
+    { label: 'Total licences',       value: totalLicences,       delta: kpis?.activeLicencesDelta    ?? 0, icon: FileText,    color: 'bocra-teal'  },
+    { label: 'Pending licences',     value: pendingLicences,     delta: 0,                             icon: Clock,       color: 'bocra-gold'  },
+    { label: 'Total complaints',     value: totalComplaints,     delta: kpis?.complaintsYTDDelta    ?? 0, icon: AlertCircle, color: 'bocra-red'   },
+    { label: 'Total publications',   value: totalPublications,   delta: 0,                             icon: FileText,    color: 'bocra-navy'  },
+    { label: 'Registered users',     value: usersCount,          delta: kpis?.mobileSubscribersDelta??0, icon: Users,      color: 'bocra-green' },
   ]
 
   // ── Export full dashboard report ───────────────────────────────────────────
@@ -224,9 +294,9 @@ export default function AdminDashboardPage() {
 
       <div className="container-page py-8 space-y-8">
         <InView>
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-5">
             {isLoading
-              ? Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)
+              ? Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)
               : kpiCards.map((k) => (
                 <motion.div key={k.label} variants={fadeUp}
                   className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-card hover:shadow-card-md transition-all hover:-translate-y-0.5">
@@ -252,15 +322,12 @@ export default function AdminDashboardPage() {
             <motion.div variants={fadeUp} className="lg:col-span-2 rounded-2xl bg-white p-6 shadow-card">
               <h3 className="mb-5 font-heading text-base font-bold text-slate-900">Licence applications — 6 month trend</h3>
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={MONTHLY_APPS} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <BarChart data={(monthlyApplications && monthlyApplications.length > 0) ? monthlyApplications : MONTHLY_APPS.map(item => ({ month: item.month, count: item.applications }))} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="applications" name="Received"  fill="#1A7F79" radius={[4,4,0,0]} />
-                  <Bar dataKey="approved"     name="Approved"  fill="#2D6A2D" radius={[4,4,0,0]} />
-                  <Bar dataKey="rejected"     name="Rejected"  fill="#7A1E2E" radius={[4,4,0,0]} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="count" name="Applications" fill="#1A7F79" radius={[4,4,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
             </motion.div>
@@ -268,8 +335,13 @@ export default function AdminDashboardPage() {
               <h3 className="mb-5 font-heading text-base font-bold text-slate-900">Licences by sector</h3>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
-                  <Pie data={SECTOR_PIE} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
-                    {SECTOR_PIE.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                  <Pie
+                    data={(licencesBySectorData && licencesBySectorData.length > 0 ? licencesBySectorData : SECTOR_PIE.map(item => ({ sector: item.name, count: item.value, fill: item.fill }))) as any}
+                    cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="count" nameKey="sector"
+                  >
+                    {(licencesBySectorData && licencesBySectorData.length > 0 ? licencesBySectorData : SECTOR_PIE).map((e: any, i: number) => (
+                      <Cell key={i} fill={e.fill ?? ['#1A7F79', '#2D6A2D', '#F0B429', '#7A1E2E'][i % 4]} />
+                    ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
                   <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
@@ -281,21 +353,16 @@ export default function AdminDashboardPage() {
 
         <InView>
           <motion.div variants={fadeUp} className="rounded-2xl bg-white p-6 shadow-card">
-            <h3 className="mb-5 font-heading text-base font-bold text-slate-900">Complaints filed vs resolved</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={COMPLAINTS_TREND} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="filedGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#7A1E2E" stopOpacity={0.15} /><stop offset="95%" stopColor="#7A1E2E" stopOpacity={0} /></linearGradient>
-                  <linearGradient id="resolvedGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#1A7F79" stopOpacity={0.15} /><stop offset="95%" stopColor="#1A7F79" stopOpacity={0} /></linearGradient>
-                </defs>
+            <h3 className="mb-5 font-heading text-base font-bold text-slate-900">Complaints by category</h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={(complaintsByCategory && complaintsByCategory.length > 0) ? complaintsByCategory : [{ category: 'billing', count: 30 }, { category: 'coverage', count: 22 }, { category: 'quality', count: 18 }, { category: 'data', count: 12 }, { category: 'fraud', count: 7 }, { category: 'other', count: 5 }]} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="category" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="filed"    name="Filed"    stroke="#7A1E2E" strokeWidth={2} fill="url(#filedGrad)"    dot={{ r: 3 }} />
-                <Area type="monotone" dataKey="resolved" name="Resolved" stroke="#1A7F79" strokeWidth={2} fill="url(#resolvedGrad)" dot={{ r: 3 }} />
+                <Bar dataKey="count" fill="#7A1E2E" radius={[4,4,0,0]} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-              </AreaChart>
+              </BarChart>
             </ResponsiveContainer>
           </motion.div>
         </InView>

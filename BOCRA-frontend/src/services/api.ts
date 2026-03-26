@@ -1,17 +1,13 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
 
 const api = axios.create({
-  // Direct link to your LIVE Railway backend
-  baseURL: 'https://batanani-digital-production.up.railway.app/api', 
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: 'https://batanani-digital-production.up.railway.app/api',
 });
 
-// This attaches your login token to every request automatically
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token && config.headers) {
+  const token = useAuthStore.getState().accessToken || sessionStorage.getItem('access_token');
+  if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

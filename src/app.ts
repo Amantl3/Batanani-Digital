@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import licenceRoutes from './modules/licences/routes';
 import complaintRoutes from './modules/complaints/routes';
+import analyticsRoutes from './modules/analytics/routes'; 
+
 
 const app = express();
 
@@ -21,20 +23,8 @@ app.use('/api/complaints', complaintRoutes);
 // 3. Admin Aliases (Frontend calls these specifically)
 app.use('/api/admin/licences', licenceRoutes);
 app.use('/api/admin/complaints', complaintRoutes);
-
-// 4. Manual Stats Route (This fuels the 4 KPI cards at the top of your dashboard)
-app.get('/api/analytics/dashboard', (req, res) => {
-  res.json({
-    activeLicences: 154, 
-    activeLicencesDelta: 5,
-    complaintsYTD: 24,
-    complaintsYTDDelta: -2,
-    mobileSubscribers: 2841,
-    mobileSubscribersDelta: 12
-  });
-});
-
-// 5. Notification Placeholder (Stops the 404 console spam)
+app.use('/api/analytics', analyticsRoutes);
+// 3. Dummy Notifications route to stop the 404 spam in your console
 app.get('/api/notifications', (req, res) => {
   res.json({ success: true, data: [] });
 });

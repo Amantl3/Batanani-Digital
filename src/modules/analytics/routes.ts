@@ -1,9 +1,14 @@
+// src/modules/analytics/routes.ts
+
 import { Router } from 'express';
-import { getDashboardStats } from './controller';
+import { getDashboardStats, getComplaintsAnalytics } from './controller';
 
 const router = Router();
 
-// This will be accessible at /api/analytics/dashboard
+// Existing
 router.get('/dashboard', getDashboardStats);
+
+// ✅ NEW (this powers your heatmap UI)
+router.get('/complaints', getComplaintsAnalytics);
 
 export default router;

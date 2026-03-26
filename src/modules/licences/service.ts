@@ -1,6 +1,3 @@
-/**
- * src/modules/licences/service.ts
- */
 import { supabase } from '../../config/supabase'
 
 export interface LicenceFilters {
@@ -16,7 +13,6 @@ export const getAllLicences = async (filters: LicenceFilters = {}) => {
   const { search, type, status, userId, page = 1, limit = 15 } = filters
   let query = supabase.from('Licence').select('*', { count: 'exact' })
 
-  // FIX: Fixed the search query formatting for Supabase
   if (search) {
     query = query.or(`companyName.ilike.%${search}%,id.ilike.%${search}%`)
   }
@@ -29,7 +25,6 @@ export const getAllLicences = async (filters: LicenceFilters = {}) => {
 
   const { data, error, count } = await query
   if (error) throw new Error(error.message)
-
   return {
     results:    data ?? [],
     total:      count ?? 0,
@@ -50,18 +45,18 @@ export const getLicence = async (id: string) => {
 }
 
 export const createLicence = async (payload: {
-  type:        string
-  companyName: string
-  userId:      string
-  region?:     string
+  type:         string
+  companyName:  string
+  userId?:      string | null
+  region?:      string
 }) => {
   const { data, error } = await supabase
     .from('Licence')
     .insert({
       type:        payload.type,
       companyName: payload.companyName,
-      userId:      payload.userId,
-      region:      payload.region || 'Gaborone', // FIX: Added default region for map
+      userId:      payload.userId ?? null,
+      region:      payload.region || 'Gaborone',
       status:      'pending',
     })
     .select()
@@ -90,12 +85,10 @@ export const deleteLicence = async (id: string) => {
 export const getLicenceStats = async () => {
   const { data, error } = await supabase.from('Licence').select('status')
   if (error) throw new Error(error.message)
-
   const stats = (data ?? []).reduce((acc: Record<string, number>, row) => {
     acc[row.status] = (acc[row.status] ?? 0) + 1
     return acc
   }, {})
-
   return {
     total:     data?.length ?? 0,
     active:    stats['active']    ?? 0,
@@ -128,7 +121,6 @@ export const getPendingLicences = async () => {
 export const getExpiringSoonLicences = async () => {
   const thirtyDays = new Date()
   thirtyDays.setDate(thirtyDays.getDate() + 30)
-
   const { data, error } = await supabase
     .from('Licence')
     .select('*')

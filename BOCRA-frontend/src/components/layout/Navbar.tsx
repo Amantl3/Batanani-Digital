@@ -26,26 +26,15 @@ import { formatRelative } from '@/utils/formatters'
 
 // Nav links defined locally
 const NAV = [
-  { label: 'Home', path: '/', requiresAuth: false },
-  { label: 'Licensing', path: '/licensing', requiresAuth: false },
-  { label: 'Complaints', path: '/complaints', requiresAuth: false },
-  { label: 'Publications', path: '/publications', requiresAuth: false },
-  {
-    label: 'Dashboard',
-    path: '/admin/dashboard',
-    requiresAuth: true,
-    requiresAdmin: true,
-  },
-  { label: 'My Portal', path: '/portal', requiresAuth: true },
-  {
-    label: 'Analytics Map',
-    path: '/map',
-    requiresAuth: true,
-    requiresAdmin: true,
-  },
-  { label: 'Contact', path: '/contact', requiresAuth: false },
+  { label: 'Home', path: '/', showFor: ['guest', 'user', 'admin'] },
+  { label: 'Licensing', path: '/licensing', showFor: ['guest', 'user'] },
+  { label: 'Complaints', path: '/complaints', showFor: ['guest', 'user'] },
+  { label: 'Publications', path: '/publications', showFor: ['guest', 'user'] },
+  { label: 'Dashboard', path: '/admin/dashboard', showFor: ['admin'] },
+  { label: 'My Portal', path: '/portal', showFor: ['user'] },
+  { label: 'Analytics Map', path: '/map', showFor: ['admin'] },
+  { label: 'Contact', path: '/contact', showFor: ['guest', 'user'] },
 ]
-
 export default function Navbar() {
   const { t } = useTranslation()
   const { user, isAuthenticated, logout } = useAuth()
@@ -56,26 +45,30 @@ export default function Navbar() {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
 
   const isAdmin = user?.role === 'admin'
-  const { data: notifications = [], isLoading: notificationsLoading } =
-    useNotifications()
+const { data, isLoading: notificationsLoading } = useNotifications()
+
+const notifications = Array.isArray(data)
+  ? data
+  : Array.isArray(data?.notifications)
+  ? data.notifications
+  : []
   const markNotificationRead = useMarkNotificationRead()
   const markAllNotificationsRead = useMarkAllNotificationsRead()
   const unreadNotifications = notifications.filter((notification) => !notification.read)
 
-  // Filter visible links based on auth and role
-  const visibleLinks = NAV.filter((link) => {
-    if (link.requiresAdmin && !isAdmin) return false
-    if (link.requiresAuth && !isAuthenticated) return false
-    if (link.path === '/portal' && isAdmin) return false // hide portal for admins
-    return true
-  })
+// Determine the current role
+const userRole = isAuthenticated ? (isAdmin ? 'admin' : 'user') : 'guest'
 
-  const initials = user?.fullName
-    .split(' ')
+// Filter visible links based on role
+const visibleLinks = NAV.filter((link) => link.showFor.includes(userRole))
+
+const initials =
+  user?.fullName
+    ?.split(' ')
     .map((n) => n[0])
     .join('')
     .slice(0, 2)
-    .toUpperCase()
+    .toUpperCase() || 'U'
 
   return (
     <header className="sticky top-0 z-50 bg-bocra-navy shadow-lg">

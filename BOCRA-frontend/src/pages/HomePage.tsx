@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useInView } from 'framer-motion'
 import {
@@ -74,8 +74,6 @@ const FOOTER_LINKS = {
 }
 
 export default function HomePage() {
-  const [searchQuery, setSearchQuery] = useState('')
-
   return (
     <div className="overflow-x-hidden">
 
@@ -145,8 +143,6 @@ export default function HomePage() {
                 <Search className="h-5 w-5 shrink-0 text-slate-400" />
                 <input
                   type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search licences, regulations, publications…"
                   className="flex-1 border-none bg-transparent py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
                 />

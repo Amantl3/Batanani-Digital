@@ -15,7 +15,7 @@ export const trackComplaint = (ref: string) =>
 
 export const getMyComplaints = () =>
   api
-    .get<PaginatedResponse<Complaint>>('/complaints/mine')
+    .get<PaginatedResponse<Complaint>>('/complaints')
     .then((r) => r.data)
 
 export const uploadAttachment = (file: File) => {

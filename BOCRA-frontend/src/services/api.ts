@@ -1,24 +1,14 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/authStore';
 
 const api = axios.create({
   baseURL: 'https://batanani-digital-production.up.railway.app/api',
 });
 
 api.interceptors.request.use((config) => {
-  const authData = localStorage.getItem('bocra-auth');
-  
-  if (authData) {
-    try {
-      const parsed = JSON.parse(authData);
-      // We try to find the token, but we don't block if it's missing
-      const token = parsed.state?.token || parsed.state?.user?.token;
-
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (e) {
-      console.warn("Hackathon bypass: Requesting without valid token structure");
-    }
+  const token = useAuthStore.getState().accessToken || sessionStorage.getItem('access_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });

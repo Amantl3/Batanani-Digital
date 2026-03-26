@@ -24,7 +24,6 @@ const FeesPage = lazy(() => import('./pages/portal/FeesPage'));
 const RenewalLicencePage = lazy(() => import('./pages/portal/RenewalLicencePage'));
 const ApprovalApplicationPage = lazy(() => import('./pages/portal/ApprovalApplicationPage'));
 const PaymentHistoryPage = lazy(() => import('./pages/portal/PaymentHistoryPage'));
-const ComplaintsMapPage = lazy(() => import('./pages/ComplaintsMapPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const SitemapPage = lazy(() => import('./pages/SitemapPage'));
 const AccessibilityPage = lazy(() => import('./pages/AccessibilityPage'));
@@ -33,7 +32,7 @@ const TermsOfUsePage = lazy(() => import('./pages/TermsOfUsePage'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'));
 const AdminApplicationsPage = lazy(() => import('./pages/admin/AdminApplicationsPage'));
 const AdminComplaintsPage = lazy(() => import('./pages/admin/AdminComplaintsPage'));
-
+const AdminComplaintsMapPage = lazy(() => import('./pages/admin/AdminComplaintsMapPage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const AdminLoginPage = lazy(() => import('./pages/auth/AdminLoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
@@ -60,7 +59,6 @@ export default function App() {
             <Route path="/complaints/track/:ref" element={<ComplaintTrackPage />} />
             <Route path="/complaints/track" element={<ComplaintTrackPage />} />
             <Route path="/publications" element={<PublicationsPage />} />
-            <Route path="/map" element={<ComplaintsMapPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/sitemap" element={<SitemapPage />} />
             <Route path="/accessibility" element={<AccessibilityPage />} />
@@ -85,6 +83,7 @@ export default function App() {
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
               <Route path="/admin/applications" element={<AdminApplicationsPage />} />
               <Route path="/admin/complaints" element={<AdminComplaintsPage />} />
+              <Route path="/admin/map" element={<AdminComplaintsMapPage />} />
             </Route>
           </Route>
 

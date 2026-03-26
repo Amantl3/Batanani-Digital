@@ -25,3 +25,13 @@ export const updateComplaintStatus = async (id: string, status: string) => {
   const { data } = await api.patch(`/admin/complaints/${id}/status`, { status })
   return data
 }
+
+export const getAllDocuments = async () => {
+  const { data } = await api.get('/documents')
+  return data
+}
+
+export const getAllUsers = async () => {
+  const { data } = await api.get('/admin/users')
+  return data
+}

@@ -8,23 +8,15 @@ import documentRoutes from './modules/documents/routes';
 
 const app = express();
 
-// Handle preflight requests first
-app.options('*', cors());
 
-app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:3001', 
-    'http://localhost:5173', 
-    'http://127.0.0.1:5173',
-    'https://batanani-digital-production.up.railway.app',
-    'https://bocra-frontend-jhmc61wq9-amas-projects-aa434059.vercel.app', // Added your Vercel URL
-    /\.vercel\.app$/ // This "Wildcard" allows ANY of your Vercel preview deployments
-  ],
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.use(express.json());
 
@@ -41,6 +33,12 @@ app.use('/api/admin/complaints', complaintRoutes);
 
 app.get('/api/notifications', (req, res) => {
   res.json({ success: true, data: [] });
+});
+
+// Error handling to prevent Status 500 crashes
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error(err.stack);
+  res.status(500).send({ error: 'Something broke!', message: err.message });
 });
 
 export default app;

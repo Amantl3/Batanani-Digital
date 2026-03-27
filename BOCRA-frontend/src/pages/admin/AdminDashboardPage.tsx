@@ -161,7 +161,7 @@ export default function AdminDashboardPage() {
   const { data: licencesBySectorData } = useQuery({
     queryKey: ['analytics', 'licencesBySector'],
     queryFn: () => analyticsService.getLicencesBySector(),
-    placeholderData: SECTOR_PIE.map(item => ({ sector: item.name.toLowerCase(), count: item.value, pct: 0 })),
+    placeholderData: SECTOR_PIE.map(item => ({ sector: item.name.toLowerCase(), count: item.value, pct: 0 })) as any,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
     refetchOnWindowFocus: false,
@@ -208,7 +208,7 @@ export default function AdminDashboardPage() {
       // Export applications
       const appsData = await adminService.getAllApplications({ limit: 1000 })
       exportToCSV(
-        appsData.data.map(a => ({
+        appsData.data.map((a: any) => ({
           Reference:    a.reference,
           Company:      a.companyName,
           Category:     a.category,
@@ -222,7 +222,7 @@ export default function AdminDashboardPage() {
       // Export complaints
       const cmpData = await adminService.getAllComplaints({ limit: 1000 })
       exportToCSV(
-        cmpData.data.map(c => ({
+        cmpData.data.map((c: any) => ({
           Reference: c.referenceNumber,
           Provider:  c.providerName,
           Category:  c.category,
@@ -237,7 +237,7 @@ export default function AdminDashboardPage() {
     } catch {
       // Fallback: export whatever is loaded in state
       exportToCSV(
-        (recentApps?.data ?? []).map(a => ({
+        (recentApps?.data ?? []).map((a: any) => ({
           Reference: a.reference, Company: a.companyName,
           Category: a.category,  Status: a.status, Submitted: a.submittedAt,
         })),
@@ -376,7 +376,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-3">
                   <button onClick={() => {
                     exportToCSV(
-                      (recentApps?.data ?? []).map(a => ({ Reference: a.reference, Company: a.companyName, Category: a.category, Status: a.status, Submitted: a.submittedAt })),
+                      (recentApps?.data ?? []).map((a: any) => ({ Reference: a.reference, Company: a.companyName, Category: a.category, Status: a.status, Submitted: a.submittedAt })),
                       'applications'
                     )
                     toast.success('Applications CSV downloaded')
@@ -390,7 +390,7 @@ export default function AdminDashboardPage() {
                 <table className="data-table">
                   <thead><tr><th>Reference</th><th>Company</th><th className="hidden sm:table-cell">Status</th><th>Action</th></tr></thead>
                   <tbody>
-                    {(recentApps?.data ?? []).map(app => (
+                    {(recentApps?.data ?? []).map((app: any) => (
                       <tr key={app.id}>
                         <td><span className="font-mono text-xs font-bold text-bocra-teal">{app.reference}</span></td>
                         <td><p className="text-sm font-medium truncate max-w-[140px]">{app.companyName}</p></td>
@@ -409,7 +409,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-3">
                   <button onClick={() => {
                     exportToCSV(
-                      (recentComplaints?.data ?? []).map(c => ({ Reference: c.referenceNumber, Provider: c.providerName, Category: c.category, Status: c.status, Days: c.daysOpen })),
+                      (recentComplaints?.data ?? []).map((c: any) => ({ Reference: c.referenceNumber, Provider: c.providerName, Category: c.category, Status: c.status, Days: c.daysOpen })),
                       'complaints'
                     )
                     toast.success('Complaints CSV downloaded')
@@ -423,7 +423,7 @@ export default function AdminDashboardPage() {
                 <table className="data-table">
                   <thead><tr><th>Reference</th><th>Provider</th><th className="hidden sm:table-cell">Status</th><th>Days</th></tr></thead>
                   <tbody>
-                    {(recentComplaints?.data ?? []).map(c => (
+                    {(recentComplaints?.data ?? []).map((c: any) => (
                       <tr key={c.id}>
                         <td><span className="font-mono text-xs font-bold text-bocra-teal">{c.referenceNumber}</span></td>
                         <td><p className="text-sm font-medium">{c.providerName}</p><p className="text-xs text-slate-400">{c.category}</p></td>

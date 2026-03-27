@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MainLayout } from '@/components/layout/MainLayout'
+import MainLayout from '@/components/layout/MainLayout'
 import { ChevronRight, Lock, Shield, AlertCircle } from 'lucide-react'
 
 export default function PrivacyPage() {

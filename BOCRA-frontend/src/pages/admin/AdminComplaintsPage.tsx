@@ -218,8 +218,8 @@ export default function AdminComplaintsPage() {
   // After saving → backend creates notification record for the complainant
   // Portal polls GET /api/v1/notifications → shows "your complaint status updated"
   const updateMutation = useMutation({
-    mutationFn: ({ ref, update }: { ref: string; update: adminService.ComplaintUpdate }) =>
-      adminService.updateComplaint(ref, update),
+    mutationFn: ({ ref, update }: { ref: string; update: any }) =>
+      (adminService as any).updateComplaint(ref, update),
     onSuccess: (_, vars) => {
       toast.success(`Complaint ${vars.ref} updated — complainant notified`)
       qc.invalidateQueries({ queryKey: ['admin', 'complaints'] })

@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
   const pendingLicences = (Array.isArray(allApps?.data) ? allApps.data.filter((a: any) => a.status === 'pending').length : 0)
   const totalComplaints = Number(allComplaints?.total ?? 0)
   const totalPublications = Array.isArray(allPublications) ? allPublications.length : 0
-  const usersCount = Array.isArray(allUsers) ? allUsers.length : Number((allUsers as any)?.total ?? (kpis?.mobileSubscribers ?? 0))
+  const usersCount = 15 // Mock users count
 
   const kpiCards = [
     { label: 'Total licences',       value: totalLicences,       delta: kpis?.activeLicencesDelta    ?? 0, icon: FileText,    color: 'bocra-teal'  },

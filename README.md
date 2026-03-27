@@ -18,7 +18,7 @@ Batanani Digital is a comprehensive regulatory ecosystem built for the Botswana 
 
 **Backend**
 * **NestJS:** A scalable Node.js framework providing the enterprise-grade architecture required for regulatory tools.
-* **PostgreSQL:** Relational database for maintaining strict data relationships and audit trails.
+* **Supabase** Relational database for maintaining strict data relationships and audit trails.
 * **Railway:** Cloud infrastructure platform for hosting, database management, and CI/CD.
 
 ### System Architecture & API
@@ -65,10 +65,8 @@ The relational design ensures that every complaint or license application is lin
     ```
 
 3.  **Environment Setup**
-    Create a `.env` file in the root directory and provide your backend URL:
-    ```env
-    VITE_API_URL=[https://batanani-digital-production.up.railway.app/api](https://batanani-digital-production.up.railway.app/api)
-    ```
+# Copy this file to .env and replace the value with your backend URL
+VITE_API_URL=https://your-api-url-here.com/api
 
 4.  **Run the application**
     ```bash

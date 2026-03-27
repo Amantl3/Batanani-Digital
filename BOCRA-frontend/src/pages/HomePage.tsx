@@ -7,6 +7,7 @@ import {
   Users, Award, Radio, MapPin,
   ArrowBigRightDash,
 } from 'lucide-react'
+import { cn } from '@/utils/cn'
 
 // ── Animation helpers ─────────────────────────────────────────────────────────
 const fadeUp = {
@@ -66,19 +67,64 @@ const QUICK_LINKS = [
   { label: 'Download publications',   to: '/publications' },
 ]
 
-const FOOTER_LINKS = {
-  'Licensing':   ['Apply for licence', 'Renew licence',      'Licence registry',    'Type approval',      'Licence conditions'],
-  'Consumers':   ['File a complaint',  'Track complaint',    'Consumer rights',     'FAQs',               'Toll-free helpline'],
-  'Regulation':  ['Publications',      'Consultations',      'Regulations',         'Government gazettes','Annual reports'    ],
-  'About BOCRA': ['Who we are',        'Board & management', 'Mandate',             'Careers',            'Contact us'        ],
-}
+const FOOTER_LINKS = [
+  {
+    category: 'Licensing',
+    links: [
+      { label: 'Apply for licence', to: '/portal' },
+      { label: 'Renew licence', to: '/portal' },
+      { label: 'Licence registry', to: '/licensing' },
+      { label: 'Type approval', to: '#' },
+      { label: 'Licence conditions', to: '#' },
+    ],
+  },
+  {
+    category: 'Consumers',
+    links: [
+      { label: 'File a complaint', to: '/complaints' },
+      { label: 'Track complaint', to: '/complaints/track' },
+      { label: 'Consumer rights', to: '#' },
+      { label: 'FAQs', to: '#' },
+      { label: 'Toll-free helpline', to: '#' },
+    ],
+  },
+  {
+    category: 'Regulation',
+    links: [
+      { label: 'Publications', to: '/publications' },
+      { label: 'Consultations', to: '/publications' },
+      { label: 'Regulations', to: '/publications' },
+      { label: 'Government gazettes', to: '/publications' },
+      { label: 'Annual reports', to: '/publications' },
+    ],
+  },
+  {
+    category: 'About BOCRA',
+    links: [
+      { label: 'Who we are', to: '#' },
+      { label: 'Board & management', to: '#' },
+      { label: 'Mandate', to: '#' },
+      { label: 'Careers', to: '#' },
+      { label: 'Contact us', to: '/contact' },
+    ],
+  },
+]
+
+const BOTTOM_LINKS = [
+  { label: 'Contact us', to: '/contact' },
+  { label: 'Sitemap', to: '/sitemap' },
+  { label: 'Privacy policy', to: '/privacy-policy' },
+  { label: 'Terms of use', to: '/terms' },
+  { label: 'Accessibility', to: '/accessibility' },
+  { label: 'Sitemap', to: '/sitemap' },
+]
 
 export default function HomePage() {
   return (
     <div className="overflow-x-hidden">
 
       {/* HERO — full viewport with image + overlay + content*/}
-      <section className="relative flex min-h-[92vh] items-center overflow-hidden">
+      <section className="relative flex min-h-screen items-center overflow-hidden sm:min-h-[92vh]">
 
         {/* ── Background image ── */}
         <img
@@ -93,7 +139,7 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-bocra-navy/60 to-transparent" />
 
         {/* ── Hero content ── */}
-        <div className="container-page relative z-10 py-28">
+        <div className="container-page relative z-10 pb-48 pt-12 sm:py-28">
           <motion.div
             variants={stagger}
             initial="hidden"
@@ -118,7 +164,7 @@ export default function HomePage() {
             {/* Headline */}
             <motion.h1
               variants={fadeUp}
-              className="mb-6 font-heading text-5xl font-bold leading-[1.1] tracking-tight text-white sm:text-6xl"
+              className="mb-4 font-heading text-3xl font-bold leading-tight tracking-tight text-white sm:mb-6 sm:text-6xl"
             >
               Connecting{' '}
               <span className="text-bocra-teal">Botswana</span>
@@ -129,7 +175,7 @@ export default function HomePage() {
             {/* Sub */}
             <motion.p
               variants={fadeUp}
-              className="mb-8 max-w-xl text-lg leading-relaxed text-white/75"
+              className="mb-6 max-w-xl text-sm leading-relaxed text-white/75 sm:mb-8 sm:text-lg"
             >
               BOCRA regulates telecommunications, broadcasting, postal and internet services in the public interest — enabling every Motswana to participate in the digital economy.
             </motion.p>
@@ -137,55 +183,59 @@ export default function HomePage() {
             {/* Search bar */}
             <motion.div
               variants={fadeUp}
-              className="mb-8 flex max-w-lg overflow-hidden rounded-xl bg-white shadow-card-lg"
+              className="mb-6 flex flex-col overflow-hidden rounded-xl bg-white shadow-card-lg sm:mb-8 sm:flex-row sm:max-w-lg"
             >
-              <div className="flex flex-1 items-center gap-3 px-5">
+              <div className="flex flex-1 items-center gap-3 px-5 py-1 sm:py-0">
                 <Search className="h-5 w-5 shrink-0 text-slate-400" />
                 <input
                   type="search"
                   placeholder="Search licences, regulations, publications…"
-                  className="flex-1 border-none bg-transparent py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                  className="flex-1 border-none bg-transparent py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none sm:py-4"
                 />
               </div>
-              <button className="m-2 rounded-lg bg-bocra-teal px-6 text-sm font-semibold text-white transition-colors hover:bg-teal-600">
+              <button className="m-2 rounded-lg bg-bocra-teal px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-600 sm:py-0">
                 Search
               </button>
             </motion.div>
 
             {/* CTAs */}
-            <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
-              <Link to="/licensing" className="flex items-center gap-2 rounded-xl bg-bocra-teal px-6 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-teal-600">
+            <motion.div variants={fadeUp} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link to="/licensing" className="flex items-center justify-center gap-2 rounded-xl bg-bocra-teal px-6 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-teal-600">
                 Apply for a licence <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link to="/complaints" className="flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/20">
+              <Link to="/complaints" className="flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/20">
                 <Shield className="h-4 w-4" /> File a complaint
               </Link>
-              <Link to="/portal" className="flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/20">
+              <Link to="/portal" className="flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-white/20">
                 <ArrowBigRightDash className="h-4 w-4" /> Access portal
               </Link>
             </motion.div>
           </motion.div>
         </div>
 
-        {/* ── Stats strip pinned to bottom of hero ── */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 px-4 py-3 sm:px-0 sm:py-0">
+        {/* ── Stats strip ── */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-4 pt-0 sm:px-0 sm:py-0">
           <div className="container-page">
             <motion.div
               variants={stagger}
               initial="hidden"
               animate="show"
-              className="overflow-hidden rounded-t-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg shadow-slate-950/30 ring-1 ring-white/30"
+              className="overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg shadow-slate-950/30 ring-1 ring-white/30 sm:rounded-b-none sm:rounded-t-3xl"
             >
-              <div className="grid grid-cols-1 divide-y divide-white/15 sm:grid-cols-4 sm:divide-y-0 sm:divide-x">
-                {STATS.map((s) => (
+              <div className="grid grid-cols-2 sm:grid-cols-4 sm:divide-x sm:divide-white/15">
+                {STATS.map((s, i) => (
                   <motion.div
                     key={s.label}
                     variants={fadeUp}
-                    className="flex items-center gap-3 px-5 py-4 text-center sm:text-left sm:px-6 sm:py-5"
+                    className={cn(
+                      "flex flex-col items-center gap-1 px-4 py-2 text-center sm:flex-row sm:gap-3 sm:px-6 sm:py-5 sm:text-left",
+                      i < 2 && "border-b border-white/15 sm:border-b-0",
+                      i % 2 === 0 && "border-r border-white/15 sm:border-r-0"
+                    )}
                   >
-                    <s.icon className="mx-auto h-5 w-5 shrink-0 text-bocra-teal sm:mx-0" />
+                    <s.icon className="h-5 w-5 shrink-0 text-bocra-teal" />
                     <div>
-                      <p className="font-heading text-2xl font-bold text-white">{s.value}</p>
+                      <p className="hidden font-heading text-xl font-bold text-white sm:block sm:text-2xl">{s.value}</p>
                       <p className="text-xs text-white/70">{s.label}</p>
                     </div>
                   </motion.div>
@@ -286,9 +336,6 @@ export default function HomePage() {
                 Our mandate covers telecommunications, broadcasting, postal services, internet governance, and cybersecurity — ensuring innovation thrives within a fair, transparent framework.
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
-                <Link to="/dashboard" className="flex items-center gap-2 rounded-xl bg-bocra-teal px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-600">
-                  View market data <ArrowRight className="h-4 w-4" />
-                </Link>
                 <Link to="/publications" className="flex items-center gap-2 rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10">
                   Our publications
                 </Link>
@@ -427,13 +474,15 @@ export default function HomePage() {
             </div>
 
             {/* Link columns */}
-            {Object.entries(FOOTER_LINKS).map(([category, links]) => (
-              <div key={category}>
-                <h4 className="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">{category}</h4>
+            {FOOTER_LINKS.map((col) => (
+              <div key={col.category}>
+                <h4 className="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">{col.category}</h4>
                 <ul className="space-y-3">
-                  {links.map((link) => (
-                    <li key={link}>
-                      <a href="#" className="text-sm text-slate-400 transition-colors hover:text-white">{link}</a>
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <Link to={link.to} className="text-sm text-slate-400 transition-colors hover:text-white">
+                        {link.label}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -471,8 +520,10 @@ export default function HomePage() {
               © {new Date().getFullYear()} Botswana Communications Regulatory Authority. All rights reserved.
             </p>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              {['Privacy policy', 'Terms of use', 'Accessibility', 'Sitemap'].map((l) => (
-                <a key={l} href="#" className="text-xs text-slate-500 transition-colors hover:text-white">{l}</a>
+              {BOTTOM_LINKS.map((link) => (
+                <Link key={link.label} to={link.to} className="text-xs text-slate-500 transition-colors hover:text-white">
+                  {link.label}
+                </Link>
               ))}
               <div className="flex overflow-hidden rounded-full border border-white/15">
                 <button className="bg-bocra-teal px-3 py-1 text-xs font-semibold text-white">EN</button>

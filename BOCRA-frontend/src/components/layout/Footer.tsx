@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
-import { AccessibilityModal } from '@pages/AccessibilityPage'
-import { PrivacyPolicyModal } from '@pages/PrivacyPolicyPage'
-import { TermsOfUseModal } from '@pages/TermsOfUsePage'
+const AccessibilityModal = lazy(() => import('@pages/AccessibilityPage').then(m => ({ default: m.AccessibilityModal })))
+const PrivacyPolicyModal = lazy(() => import('@pages/PrivacyPolicyPage').then(m => ({ default: m.PrivacyPolicyModal })))
+const TermsOfUseModal = lazy(() => import('@pages/TermsOfUsePage').then(m => ({ default: m.TermsOfUseModal })))
 
 const LINKS = [
   { label: 'Contact us', to: '/contact' },
@@ -75,18 +75,20 @@ export default function Footer() {
         </div>
       </footer>
 
-      <PrivacyPolicyModal
-        isOpen={isPrivacyOpen}
-        onClose={() => setIsPrivacyOpen(false)}
-      />
-      <AccessibilityModal
-        isOpen={isAccessibilityOpen}
-        onClose={() => setIsAccessibilityOpen(false)}
-      />
-      <TermsOfUseModal
-        isOpen={isTermsOpen}
-        onClose={() => setIsTermsOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <PrivacyPolicyModal
+          isOpen={isPrivacyOpen}
+          onClose={() => setIsPrivacyOpen(false)}
+        />
+        <AccessibilityModal
+          isOpen={isAccessibilityOpen}
+          onClose={() => setIsAccessibilityOpen(false)}
+        />
+        <TermsOfUseModal
+          isOpen={isTermsOpen}
+          onClose={() => setIsTermsOpen(false)}
+        />
+      </Suspense>
     </>
   )
 }

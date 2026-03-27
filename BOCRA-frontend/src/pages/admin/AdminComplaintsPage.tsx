@@ -219,7 +219,7 @@ export default function AdminComplaintsPage() {
   // Portal polls GET /api/v1/notifications → shows "your complaint status updated"
   const updateMutation = useMutation({
     mutationFn: ({ ref, update }: { ref: string; update: any }) =>
-      (adminService as any).updateComplaint(ref, update),
+      adminService.updateComplaint(ref, update),
     onSuccess: (_, vars) => {
       toast.success(`Complaint ${vars.ref} updated — complainant notified`)
       qc.invalidateQueries({ queryKey: ['admin', 'complaints'] })

@@ -21,8 +21,8 @@ export const getAllComplaints = async (params: any = {}) => {
   return data
 }
 
-export const updateComplaintStatus = async (id: string, status: string) => {
-  const { data } = await api.patch(`/admin/complaints/${id}/status`, { status })
+export const updateComplaint = async (id: string, update: any) => {
+  const { data } = await api.patch(`/admin/complaints/${id}/status`, update)
   return data
 }
 

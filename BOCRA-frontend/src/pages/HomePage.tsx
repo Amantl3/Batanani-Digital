@@ -1,11 +1,10 @@
-import { useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
 import {
   Search, ArrowRight, FileText, Shield, Globe, Lock,
-  Zap, Phone, ChevronRight, PlayCircle, TrendingUp,
-  Users, Award, Radio, MapPin,
-  ArrowBigRightDash,
+  Zap, Phone, ChevronRight, TrendingUp, Users, Award,
+  Radio, MapPin, ArrowBigRightDash, Cookie, X, Settings,
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
@@ -32,6 +31,182 @@ function InView({ children, className }: { children: React.ReactNode; className?
     >
       {children}
     </motion.div>
+  )
+}
+
+// ── Cookie Consent System ───────────────────────────────────────────────────
+type CookiePreferences = {
+  necessary: boolean
+  analytics: boolean
+  functional: boolean
+  marketing: boolean
+}
+
+const defaultPreferences: CookiePreferences = {
+  necessary: true,
+  analytics: false,
+  functional: false,
+  marketing: false,
+}
+
+function CookieConsent() {
+  const [showBanner, setShowBanner] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bocra-cookie-preferences')
+    if (saved) {
+      setPreferences(JSON.parse(saved))
+    } else {
+      setShowBanner(true)
+    }
+  }, [])
+
+  const savePreferences = (newPrefs: CookiePreferences) => {
+    localStorage.setItem('bocra-cookie-preferences', JSON.stringify(newPrefs))
+    setPreferences(newPrefs)
+    setShowModal(false)
+    setShowBanner(false)
+  }
+
+  const acceptAll = () => {
+    const allAccepted = { necessary: true, analytics: true, functional: true, marketing: true }
+    savePreferences(allAccepted)
+  }
+
+  const rejectAll = () => {
+    const minimal = { necessary: true, analytics: false, functional: false, marketing: false }
+    savePreferences(minimal)
+  }
+
+  const togglePreference = (key: keyof CookiePreferences) => {
+    if (key === 'necessary') return
+    setPreferences(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const openPreferences = () => {
+    setShowBanner(false)
+    setShowModal(true)
+  }
+
+  return (
+    <>
+      {/* Cookie Banner */}
+      <AnimatePresence>
+        {showBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-4 left-4 right-4 z-50 max-w-md mx-auto bg-white rounded-2xl shadow-2xl border border-slate-200 p-6"
+          >
+            <div className="flex items-start gap-4">
+              <Cookie className="h-6 w-6 text-bocra-teal mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-slate-900">We use cookies</p>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  This website uses cookies to enhance your experience and analyze site usage.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={rejectAll}
+                className="flex-1 py-2.5 text-sm font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50"
+              >
+                Reject All
+              </button>
+              <button
+                onClick={acceptAll}
+                className="flex-1 py-2.5 bg-bocra-navy text-white text-sm font-semibold rounded-xl hover:bg-bocra-navy/90"
+              >
+                Accept All
+              </button>
+              <button
+                onClick={openPreferences}
+                className="flex-1 py-2.5 text-sm font-medium text-bocra-teal border border-bocra-teal/30 rounded-xl hover:bg-bocra-teal/5"
+              >
+                Preferences
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Advanced Cookie Preferences Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden"
+            >
+              <div className="flex items-center justify-between border-b px-6 py-5">
+                <div className="flex items-center gap-3">
+                  <Settings className="h-5 w-5 text-bocra-teal" />
+                  <h2 className="font-semibold text-lg">Cookie Preferences</h2>
+                </div>
+                <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+                {[
+                  { key: 'necessary' as const, title: 'Necessary Cookies', desc: 'Essential for the website to function properly. Cannot be disabled.', disabled: true },
+                  { key: 'analytics' as const, title: 'Analytics Cookies', desc: 'Help us understand how visitors interact with the site.', disabled: false },
+                  { key: 'functional' as const, title: 'Functional Cookies', desc: 'Enable enhanced functionality and personalization.', disabled: false },
+                  { key: 'marketing' as const, title: 'Marketing Cookies', desc: 'Used to deliver relevant advertisements and measure campaign performance.', disabled: false },
+                ].map(({ key, title, desc, disabled }) => (
+                  <div key={key} className="flex justify-between items-start gap-4">
+                    <div className="flex-1">
+                      <p className="font-medium text-slate-900">{title}</p>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{desc}</p>
+                    </div>
+                    <div className={cn("relative inline-block w-11 h-6 rounded-full transition-colors",
+                      preferences[key] ? 'bg-bocra-teal' : 'bg-slate-200')}>
+                      <input
+                        type="checkbox"
+                        checked={preferences[key]}
+                        disabled={disabled}
+                        onChange={() => togglePreference(key)}
+                        className="sr-only peer"
+                      />
+                      <div className="absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full shadow transition-all peer-checked:translate-x-5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t px-6 py-5 flex gap-3">
+                <button
+                  onClick={rejectAll}
+                  className="flex-1 py-3 text-sm font-medium text-slate-600 border border-slate-200 rounded-2xl hover:bg-slate-50"
+                >
+                  Reject All
+                </button>
+                <button
+                  onClick={() => savePreferences(preferences)}
+                  className="flex-1 py-3 bg-bocra-navy text-white text-sm font-semibold rounded-2xl hover:bg-bocra-navy/90"
+                >
+                  Save Preferences
+                </button>
+                <button
+                  onClick={acceptAll}
+                  className="flex-1 py-3 bg-bocra-teal text-white text-sm font-semibold rounded-2xl hover:bg-teal-600"
+                >
+                  Accept All
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 
@@ -116,75 +291,45 @@ const BOTTOM_LINKS = [
   { label: 'Privacy policy', to: '/privacy-policy' },
   { label: 'Terms of use', to: '/terms' },
   { label: 'Accessibility', to: '/accessibility' },
-  { label: 'Sitemap', to: '/sitemap' },
 ]
 
 export default function HomePage() {
   return (
     <div className="overflow-x-hidden">
 
-      {/* HERO — full viewport with image + overlay + content*/}
+      {/* HERO SECTION */}
       <section className="relative flex min-h-screen items-center overflow-hidden sm:min-h-[92vh]">
-
-        {/* ── Background image ── */}
         <img
           src="/gabsCBD.jpg"
           alt="Gaborone CBD skyline"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
-
-        {/* ── Dark gradient overlay — REQUIRED for text visibility ── */}
         <div className="absolute inset-0 bg-gradient-to-r from-bocra-navy/95 via-bocra-navy/80 to-bocra-navy/40" />
-        {/* Bottom fade into stats strip */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-bocra-navy/60 to-transparent" />
 
-        {/* ── Hero content ── */}
         <div className="container-page relative z-10 pb-48 pt-12 sm:py-28">
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            animate="show"
-            className="max-w-2xl"
-          >
-            {/* Logo */}
+          <motion.div variants={stagger} initial="hidden" animate="show" className="max-w-2xl">
             <motion.div variants={fadeUp} className="mb-8">
-              <img
-                src="/bocra-logo-white.png"
-                alt="BOCRA"
-                className="h-12 w-auto"
-              />
+              <img src="/bocra-logo-white.png" alt="BOCRA" className="h-12 w-auto" />
             </motion.div>
 
-            {/* Regulator badge */}
             <motion.div variants={fadeUp} className="mb-5 inline-flex items-center gap-2 rounded-full border border-bocra-teal/50 bg-bocra-teal/10 px-4 py-1.5 backdrop-blur-sm">
               <span className="h-2 w-2 animate-pulse rounded-full bg-bocra-teal" />
               <span className="text-sm font-medium text-bocra-teal">Botswana's communications regulator</span>
             </motion.div>
 
-            {/* Headline */}
-            <motion.h1
-              variants={fadeUp}
-              className="mb-4 font-heading text-3xl font-bold leading-tight tracking-tight text-white sm:mb-6 sm:text-6xl"
-            >
+            <motion.h1 variants={fadeUp} className="mb-4 font-heading text-3xl font-bold leading-tight tracking-tight text-white sm:mb-6 sm:text-6xl">
               Connecting{' '}
               <span className="text-bocra-teal">Botswana</span>
               <br />to a{' '}
               <span className="text-bocra-gold">digital future</span>
             </motion.h1>
 
-            {/* Sub */}
-            <motion.p
-              variants={fadeUp}
-              className="mb-6 max-w-xl text-sm leading-relaxed text-white/75 sm:mb-8 sm:text-lg"
-            >
+            <motion.p variants={fadeUp} className="mb-6 max-w-xl text-sm leading-relaxed text-white/75 sm:mb-8 sm:text-lg">
               BOCRA regulates telecommunications, broadcasting, postal and internet services in the public interest — enabling every Motswana to participate in the digital economy.
             </motion.p>
 
-            {/* Search bar */}
-            <motion.div
-              variants={fadeUp}
-              className="mb-6 flex flex-col overflow-hidden rounded-xl bg-white shadow-card-lg sm:mb-8 sm:flex-row sm:max-w-lg"
-            >
+            <motion.div variants={fadeUp} className="mb-6 flex flex-col overflow-hidden rounded-xl bg-white shadow-card-lg sm:mb-8 sm:flex-row sm:max-w-lg">
               <div className="flex flex-1 items-center gap-3 px-5 py-1 sm:py-0">
                 <Search className="h-5 w-5 shrink-0 text-slate-400" />
                 <input
@@ -198,7 +343,6 @@ export default function HomePage() {
               </button>
             </motion.div>
 
-            {/* CTAs */}
             <motion.div variants={fadeUp} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link to="/licensing" className="flex items-center justify-center gap-2 rounded-xl bg-bocra-teal px-6 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-teal-600">
                 Apply for a licence <ArrowRight className="h-4 w-4" />
@@ -213,26 +357,17 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        {/* ── Stats strip ── */}
+        {/* Stats Strip */}
         <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-4 pt-0 sm:px-0 sm:py-0">
           <div className="container-page">
-            <motion.div
-              variants={stagger}
-              initial="hidden"
-              animate="show"
-              className="overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg shadow-slate-950/30 ring-1 ring-white/30 sm:rounded-b-none sm:rounded-t-3xl"
-            >
+            <motion.div variants={stagger} initial="hidden" animate="show" className="overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg shadow-slate-950/30 ring-1 ring-white/30 sm:rounded-b-none sm:rounded-t-3xl">
               <div className="grid grid-cols-2 sm:grid-cols-4 sm:divide-x sm:divide-white/15">
                 {STATS.map((s, i) => (
-                  <motion.div
-                    key={s.label}
-                    variants={fadeUp}
-                    className={cn(
-                      "flex flex-col items-center gap-1 px-4 py-2 text-center sm:flex-row sm:gap-3 sm:px-6 sm:py-5 sm:text-left",
-                      i < 2 && "border-b border-white/15 sm:border-b-0",
-                      i % 2 === 0 && "border-r border-white/15 sm:border-r-0"
-                    )}
-                  >
+                  <motion.div key={s.label} variants={fadeUp} className={cn(
+                    "flex flex-col items-center gap-1 px-4 py-2 text-center sm:flex-row sm:gap-3 sm:px-6 sm:py-5 sm:text-left",
+                    i < 2 && "border-b border-white/15 sm:border-b-0",
+                    i % 2 === 0 && "border-r border-white/15 sm:border-r-0"
+                  )}>
                     <s.icon className="h-5 w-5 shrink-0 text-bocra-teal" />
                     <div>
                       <p className="hidden font-heading text-xl font-bold text-white sm:block sm:text-2xl">{s.value}</p>
@@ -247,21 +382,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          QUICK ACCESS
-      ══════════════════════════════════════════════════════ */}
+      {/* Quick Access */}
       <section className="border-b border-slate-100 bg-white py-5">
         <div className="container-page">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="mr-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
-              Quick access:
-            </span>
+            <span className="mr-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Quick access:</span>
             {QUICK_LINKS.map((l) => (
-              <Link
-                key={l.label}
-                to={l.to}
-                className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-sm font-medium text-slate-700 transition-all hover:border-bocra-teal hover:bg-bocra-teal/5 hover:text-bocra-teal"
-              >
+              <Link key={l.label} to={l.to} className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-sm font-medium text-slate-700 transition-all hover:border-bocra-teal hover:bg-bocra-teal/5 hover:text-bocra-teal">
                 {l.label} <ChevronRight className="h-3 w-3" />
               </Link>
             ))}
@@ -269,37 +396,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          SERVICES GRID
-      ══════════════════════════════════════════════════════ */}
+      {/* Services Grid */}
       <section className="bg-slate-50 py-20">
         <div className="container-page">
           <InView>
             <motion.div variants={fadeUp} className="mb-12 text-center">
-              <span className="mb-3 inline-block rounded-full bg-bocra-teal/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-bocra-teal">
-                Our services
-              </span>
-              <h2 className="font-heading text-4xl font-bold text-slate-900">
-                Everything you need,<br />in one place
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-slate-500">
-                From applying for a licence to tracking your complaint — BOCRA's digital platform brings all regulatory services online.
-              </p>
+              <span className="mb-3 inline-block rounded-full bg-bocra-teal/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-bocra-teal">Our services</span>
+              <h2 className="font-heading text-4xl font-bold text-slate-900">Everything you need,<br />in one place</h2>
+              <p className="mx-auto mt-4 max-w-xl text-slate-500">From applying for a licence to tracking your complaint — BOCRA's digital platform brings all regulatory services online.</p>
             </motion.div>
 
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {SERVICES.map((s) => (
                 <motion.div key={s.title} variants={fadeUp}>
-                  <Link
-                    to={s.to}
-                    className={`group flex h-full flex-col rounded-2xl border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-card-lg ${s.border}`}
-                  >
+                  <Link to={s.to} className={`group flex h-full flex-col rounded-2xl border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-card-lg ${s.border}`}>
                     <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl ${s.bg}`}>
                       <s.icon className={`h-6 w-6 ${s.color}`} />
                     </div>
-                    <h3 className={`mb-2 font-heading text-lg font-bold text-slate-900 group-hover:${s.color}`}>
-                      {s.title}
-                    </h3>
+                    <h3 className={`mb-2 font-heading text-lg font-bold text-slate-900 group-hover:${s.color}`}>{s.title}</h3>
                     <p className="flex-1 text-sm leading-relaxed text-slate-500">{s.desc}</p>
                     <div className={`mt-4 flex items-center gap-1 text-sm font-semibold ${s.color}`}>
                       Get started <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
@@ -312,13 +426,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          BOTSWANA STORY 
-      ══════════════════════════════════════════════════════ */}
+      {/* Botswana Story */}
       <section className="overflow-hidden bg-bocra-navy">
         <div className="grid lg:grid-cols-2">
-
-          {/* Text side */}
           <InView className="flex items-center px-8 py-20 lg:px-16">
             <div>
               <motion.div variants={fadeUp} className="mb-4 inline-flex items-center gap-2 rounded-full bg-bocra-gold/20 px-4 py-1.5">
@@ -332,9 +442,6 @@ export default function HomePage() {
               <motion.p variants={fadeUp} className="mb-6 text-base leading-relaxed text-slate-400">
                 Botswana's breathtaking landscapes and rich cultural heritage are matched by an ambitious digital future. BOCRA is building the regulatory foundation that lets every citizen — from Gaborone to the most remote village — access quality communications services.
               </motion.p>
-              <motion.p variants={fadeUp} className="mb-8 text-base leading-relaxed text-slate-400">
-                Our mandate covers telecommunications, broadcasting, postal services, internet governance, and cybersecurity — ensuring innovation thrives within a fair, transparent framework.
-              </motion.p>
               <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
                 <Link to="/publications" className="flex items-center gap-2 rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10">
                   Our publications
@@ -343,30 +450,23 @@ export default function HomePage() {
             </div>
           </InView>
 
-          {/* Image grid — 2×2 */}
           <div className="grid min-h-[500px] grid-cols-2 grid-rows-2 gap-1">
-            <img src="/bocraB.jpg"    alt="BOCRA building"        className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#1e3a5f'; (e.target as HTMLImageElement).alt = '' }} />
-            <img src="/gabsCBD.jpg"   alt="Gaborone CBD"          className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#1a3a5c' }} />
-            <img src="/Kasane-Drone.jpg" alt="Okavango Delta"        className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#164a3a' }} />
-            <img src="/towerA.jpg" alt="Digital connectivity" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.background = '#2d1a3a' }} />
+            <img src="/bocraB.jpg" alt="BOCRA building" className="h-full w-full object-cover" />
+            <img src="/gabsCBD.jpg" alt="Gaborone CBD" className="h-full w-full object-cover" />
+            <img src="/Kasane-Drone.jpg" alt="Okavango Delta" className="h-full w-full object-cover" />
+            <img src="/towerA.jpg" alt="Digital connectivity" className="h-full w-full object-cover" />
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          NEWS & CONSULTATIONS
-      ══════════════════════════════════════════════════════ */}
+      {/* News & Consultations */}
       <section className="bg-white py-20">
         <div className="container-page">
           <InView>
             <div className="mb-10 flex items-end justify-between">
               <motion.div variants={fadeUp}>
-                <span className="mb-3 inline-block rounded-full bg-bocra-green/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-bocra-green">
-                  Latest updates
-                </span>
-                <h2 className="font-heading text-4xl font-bold text-slate-900">
-                  News & consultations
-                </h2>
+                <span className="mb-3 inline-block rounded-full bg-bocra-green/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-bocra-green">Latest updates</span>
+                <h2 className="font-heading text-4xl font-bold text-slate-900">News & consultations</h2>
               </motion.div>
               <motion.div variants={fadeUp}>
                 <Link to="/publications" className="hidden items-center gap-1.5 text-sm font-semibold text-bocra-teal hover:underline sm:flex">
@@ -377,22 +477,12 @@ export default function HomePage() {
 
             <div className="grid gap-5 sm:grid-cols-3">
               {NEWS.map((n, i) => (
-                <motion.article
-                  key={i}
-                  variants={fadeUp}
-                  className="group cursor-pointer rounded-2xl border border-slate-100 bg-slate-50 p-6 transition-all hover:-translate-y-1 hover:border-slate-200 hover:shadow-card-md"
-                >
-                  <span className={`mb-4 inline-block rounded-full px-3 py-1 text-xs font-semibold ${n.tagColor}`}>
-                    {n.tag}
-                  </span>
-                  <h3 className="mb-3 font-heading text-base font-bold leading-snug text-slate-900 group-hover:text-bocra-teal">
-                    {n.title}
-                  </h3>
+                <motion.article key={i} variants={fadeUp} className="group cursor-pointer rounded-2xl border border-slate-100 bg-slate-50 p-6 transition-all hover:-translate-y-1 hover:border-slate-200 hover:shadow-card-md">
+                  <span className={`mb-4 inline-block rounded-full px-3 py-1 text-xs font-semibold ${n.tagColor}`}>{n.tag}</span>
+                  <h3 className="mb-3 font-heading text-base font-bold leading-snug text-slate-900 group-hover:text-bocra-teal">{n.title}</h3>
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <span>{n.date}</span>
-                    {n.closes && (
-                      <span className="rounded-full bg-bocra-red/10 px-2 py-0.5 text-bocra-red">{n.closes}</span>
-                    )}
+                    {n.closes && <span className="rounded-full bg-bocra-red/10 px-2 py-0.5 text-bocra-red">{n.closes}</span>}
                   </div>
                 </motion.article>
               ))}
@@ -401,34 +491,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          COMPLAINT CTA BANNER
-          Put a dark atmospheric image at /public/cta-bg.jpg
-          e.g. BOCRA office, customer service desk, or abstract telecom
-      ══════════════════════════════════════════════════════ */}
+      {/* Complaint CTA Banner */}
       <section className="relative overflow-hidden py-24">
-        {/* Background image with overlay */}
-        <img
-          src="/Kasane-Drone.jpg"
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
-        {/* Always-present dark fallback + overlay */}
+        <img src="/Kasane-Drone.jpg" alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-bocra-navy" style={{ zIndex: -1 }} />
         <div className="absolute inset-0 bg-gradient-to-br from-bocra-navy/90 via-bocra-navy/80 to-bocra-red/30" />
 
         <div className="container-page relative z-10">
           <InView className="mx-auto max-w-2xl text-center">
-            <motion.span variants={fadeUp} className="mb-4 inline-block rounded-full border border-bocra-gold/40 bg-bocra-gold/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-bocra-gold">
-              Consumer protection
-            </motion.span>
-            <motion.h2 variants={fadeUp} className="mb-6 font-heading text-4xl font-bold text-white">
-              Not satisfied with your<br />service provider?
-            </motion.h2>
-            <motion.p variants={fadeUp} className="mb-8 text-lg text-white/70">
-              BOCRA protects your rights as a communications consumer. If your provider has failed to resolve your complaint within 14 days, we can help.
-            </motion.p>
+            <motion.span variants={fadeUp} className="mb-4 inline-block rounded-full border border-bocra-gold/40 bg-bocra-gold/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-bocra-gold">Consumer protection</motion.span>
+            <motion.h2 variants={fadeUp} className="mb-6 font-heading text-4xl font-bold text-white">Not satisfied with your<br />service provider?</motion.h2>
+            <motion.p variants={fadeUp} className="mb-8 text-lg text-white/70">BOCRA protects your rights as a communications consumer. If your provider has failed to resolve your complaint within 14 days, we can help.</motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3">
               <Link to="/complaints" className="flex items-center gap-2 rounded-xl bg-bocra-red px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-red-800">
                 <Shield className="h-5 w-5" /> File a complaint now
@@ -441,48 +514,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          FOOTER — single footer, built into this page only
-          MainLayout suppresses its Footer component on /
-      ══════════════════════════════════════════════════════ */}
+      {/* Footer */}
       <footer className="bg-bocra-navy">
-
-        {/* Links grid */}
         <div className="container-page border-b border-white/10 py-16">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
-
-            {/* Brand column */}
             <div className="lg:col-span-1">
               <img src="/bocra-logo-white.png" alt="BOCRA" className="mb-5 h-10 w-auto" />
               <p className="mb-6 text-sm leading-relaxed text-slate-400">
                 Botswana Communications Regulatory Authority — regulating telecommunications, broadcasting, postal and internet services in the public interest.
               </p>
               <div className="flex gap-3">
-                {[
-                  { icon: '𝕏', label: 'Twitter / X' },
-                  { icon: 'f', label: 'Facebook'    },
-                  { icon: 'in',label: 'LinkedIn'    },
-                  { icon: '▶', label: 'YouTube'     },
-                ].map((s) => (
-                  <a key={s.label} href="#" aria-label={s.label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-sm text-white/50 transition-all hover:border-bocra-teal hover:text-bocra-teal"
-                  >
-                    {s.icon}
+                {['𝕏', 'f', 'in', '▶'].map((icon, i) => (
+                  <a key={i} href="#" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-sm text-white/50 transition-all hover:border-bocra-teal hover:text-bocra-teal">
+                    {icon}
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Link columns */}
             {FOOTER_LINKS.map((col) => (
               <div key={col.category}>
                 <h4 className="mb-5 text-xs font-bold uppercase tracking-widest text-white/40">{col.category}</h4>
                 <ul className="space-y-3">
                   {col.links.map((link) => (
                     <li key={link.label}>
-                      <Link to={link.to} className="text-sm text-slate-400 transition-colors hover:text-white">
-                        {link.label}
-                      </Link>
+                      <Link to={link.to} className="text-sm text-slate-400 transition-colors hover:text-white">{link.label}</Link>
                     </li>
                   ))}
                 </ul>
@@ -491,13 +547,12 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Contact bar */}
         <div className="container-page border-b border-white/10 py-8">
           <div className="grid gap-6 sm:grid-cols-3">
             {[
-              { icon: Phone,    label: 'Toll-free helpline', value: '+267 395 7755',           sub: 'Mon–Fri, 07:30–17:00 CAT' },
-              { icon: Globe,    label: 'Email',              value: 'info@bocra.org.bw',       sub: 'General enquiries'        },
-              { icon: MapPin,   label: 'Physical address',   value: 'Plot 50671, Independence Ave',sub: 'Gaborone, Botswana'       },
+              { icon: Phone, label: 'Toll-free helpline', value: '+267 395 7755', sub: 'Mon–Fri, 07:30–17:00 CAT' },
+              { icon: Globe, label: 'Email', value: 'info@bocra.org.bw', sub: 'General enquiries' },
+              { icon: MapPin, label: 'Physical address', value: 'Plot 50671, Independence Ave', sub: 'Gaborone, Botswana' },
             ].map((c) => (
               <div key={c.label} className="flex items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bocra-teal/10">
@@ -513,26 +568,20 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="container-page py-6">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-xs text-slate-500">
-              © {new Date().getFullYear()} Botswana Communications Regulatory Authority. All rights reserved.
-            </p>
+            <p className="text-xs text-slate-500">© {new Date().getFullYear()} Botswana Communications Regulatory Authority. All rights reserved.</p>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
               {BOTTOM_LINKS.map((link) => (
-                <Link key={link.label} to={link.to} className="text-xs text-slate-500 transition-colors hover:text-white">
-                  {link.label}
-                </Link>
+                <Link key={link.label} to={link.to} className="text-xs text-slate-500 transition-colors hover:text-white">{link.label}</Link>
               ))}
-              <div className="flex overflow-hidden rounded-full border border-white/15">
-                <button className="bg-bocra-teal px-3 py-1 text-xs font-semibold text-white">EN</button>
-                <button className="px-3 py-1 text-xs font-medium text-slate-400 transition-colors hover:text-white">ST</button>
-              </div>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Cookie Consent System */}
+      <CookieConsent />
     </div>
   )
 }

@@ -18,6 +18,8 @@ app.use(cors({
     'http://localhost:5173', 
     'http://127.0.0.1:5173',
     'https://batanani-digital-production.up.railway.app',
+    'https://bocra-frontend-jhmc61wq9-amas-projects-aa434059.vercel.app', // Added your Vercel URL
+    /\.vercel\.app$/ // This "Wildcard" allows ANY of your Vercel preview deployments
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -42,4 +44,3 @@ app.get('/api/notifications', (req, res) => {
 });
 
 export default app;
-

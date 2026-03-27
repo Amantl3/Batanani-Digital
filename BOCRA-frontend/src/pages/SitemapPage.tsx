@@ -178,14 +178,6 @@ export default function SitemapPage() {
                   <div className="h-3 w-3 rounded-full bg-red-600"></div>
                   <span className="text-sm font-medium text-gray-700">Head Office</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-amber-600"></div>
-                  <span className="text-sm font-medium text-gray-700">Regional Office</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-blue-600"></div>
-                  <span className="text-sm font-medium text-gray-700">Service Center</span>
-                </div>
               </div>
             </motion.div>
           </InView>

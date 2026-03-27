@@ -45,44 +45,6 @@ const CONTACT_INFO = [
   { icon: Clock, title: 'Hours', content: '8:00 AM - 5:00 PM', subtext: 'Monday to Friday' },
 ]
 
-const SITEMAP = [
-  {
-    title: 'Main Pages',
-    links: [
-      { label: 'Home', to: '/', icon: Globe },
-      { label: 'Licensing', to: '/licensing', icon: FileText },
-      { label: 'Complaints', to: '/complaints', icon: Shield },
-      { label: 'Publications', to: '/publications', icon: FileText },
-    ],
-  },
-  {
-    title: 'Portal',
-    links: [
-      { label: 'My Portal', to: '/portal', icon: Lock },
-      { label: 'Apply for Licence', to: '/portal/apply', icon: FileText },
-      { label: 'Renew Licence', to: '/portal/renew', icon: Zap },
-      { label: 'Payment History', to: '/portal/payment-history', icon: Globe },
-    ],
-  },
-  {
-    title: 'Specialised Services',
-    links: [
-      { label: 'Compliance', to: '/portal/compliance', icon: FileText },
-      { label: 'Domain Registration', to: '/portal/DomainRegistration', icon: Lock },
-      { label: 'Fee Payment', to: '/portal/pay', icon: Globe },
-      { label: 'Complaints Map', to: '/map', icon: MapPin },
-    ],
-  },
-  {
-    title: 'Authentication',
-    links: [
-      { label: 'Login', to: '/login', icon: Lock },
-      { label: 'Register', to: '/register', icon: FileText },
-      { label: 'Forgot Password', to: '/forgot-password', icon: AlertCircle },
-    ],
-  },
-]
-
 export default function ContactPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -268,42 +230,6 @@ export default function ContactPage() {
             </motion.div>
           </InView>
         </div>
-
-        {/* Sitemap Section */}
-        <InView className="mb-16">
-          <motion.div variants={fadeUp} className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">Site Map</h2>
-            <p className="text-gray-600">Quick access to all BOCRA services and resources</p>
-          </motion.div>
-
-          <motion.div
-            variants={stagger}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {SITEMAP.map((section, i) => (
-              <motion.div
-                key={i}
-                variants={fadeUp}
-                className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-lg transition-shadow"
-              >
-                <h3 className="font-semibold text-gray-900 mb-4 text-lg">{section.title}</h3>
-                <ul className="space-y-3">
-                  {section.links.map((link, j) => (
-                    <li key={j}>
-                      <Link
-                        to={link.to}
-                        className="flex items-center gap-2 text-gray-600 hover:text-bocra-teal transition-colors group"
-                      >
-                        <link.icon className="w-4 h-4 text-slate-400 group-hover:text-bocra-teal transition-colors" />
-                        <span className="text-sm group-hover:font-medium">{link.label}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </motion.div>
-        </InView>
 
         {/* CTA Section */}
         <InView>

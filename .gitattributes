@@ -1,0 +1,15 @@
+# Exclude auto-generated or library files from language stats
+node_modules/* linguist-vendored
+dist/* linguist-vendored
+build/* linguist-vendored
+
+# Force detection of critical logic files
+*.ts linguist-detectable=true
+*.tsx linguist-detectable=true
+backend/src/**/*.ts linguist-detectable=true
+frontend/src/**/*.tsx linguist-detectable=true
+
+# Mark documentation/assets so they don't drown out the code
+public/* linguist-documentation
+*.css linguist-documentation
+*.html linguist-documentation
